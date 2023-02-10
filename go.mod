@@ -1,4 +1,4 @@
-module RestAPI
+module apous-films-rest-api
 
 go 1.20
 
