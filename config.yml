@@ -1,0 +1,10 @@
+server:
+  port: 8081
+
+database:
+  host: "localhost"
+  port: 27017
+  user: ""
+  password: ""
+  database: "apous-films"
+  
