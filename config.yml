@@ -2,9 +2,5 @@ server:
   port: 8081
 
 database:
-  host: "localhost"
-  port: 27017
-  user: ""
-  password: ""
-  database: "apous-films"
+  uri: "mongodb://localhost:27017/apous-films"
   

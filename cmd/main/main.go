@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("Unable to decode configuration file into struct: %v", err)
 	}
 
-	// Initialize app
+	// Initialize application
 	app := &app.App{}
 	app.Initialize(configuration)
 	app.Run(configuration.Server.Port)
