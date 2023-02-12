@@ -1,8 +1,8 @@
 package main
 
 import (
+	"apous-films-rest-api/app"
 	"apous-films-rest-api/config"
-	"apous-films-rest-api/pkg/app"
 	"log"
 
 	"github.com/spf13/viper"
@@ -28,5 +28,7 @@ func main() {
 	// Initialize application
 	app := &app.App{}
 	app.Initialize(configuration)
+
+	// Run
 	app.Run(configuration.Server.Port)
 }
