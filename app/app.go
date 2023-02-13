@@ -15,7 +15,7 @@ type App struct {
 	DB     *mongo.Client
 }
 
-func (a *App) Initialize(c config.Configuration) {
+func (a *App) Initialize(c *config.Configuration) {
 	// Router
 	a.Router = gin.Default()
 
