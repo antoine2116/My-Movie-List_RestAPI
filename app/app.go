@@ -24,13 +24,18 @@ func (a *App) Initialize(c *config.Configuration) {
 
 	v1 := a.Router.Group("/api")
 
-	user := v1.Group("/user")
-	user.POST("/register", handlers.UserRegestration)
-	user.POST("/login", handlers.UserLogin)
-
 	// Tests routes
 	test := v1.Group("/test")
-	test.GET("/ping", handlers.Ping)
+	{
+		test.GET("/ping", handlers.Ping)
+	}
+
+	// Authentication routes
+	auth := v1.Group("/auth")
+	{
+		auth.POST("/register", handlers.UserRegestration)
+		auth.POST("/login", handlers.UserLogin)
+	}
 
 	// Database
 	common.InitDB(c.Database.URI)
