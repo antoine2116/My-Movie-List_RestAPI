@@ -26,6 +26,7 @@ func (a *App) Initialize(c config.Configuration) {
 
 	user := v1.Group("/user")
 	user.POST("/register", handlers.UserRegestration)
+	user.POST("/login", handlers.UserLogin)
 
 	// Tests routes
 	test := v1.Group("/test")
