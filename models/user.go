@@ -14,10 +14,10 @@ import (
 )
 
 type User struct {
-	ID           primitive.ObjectID `bson:"_id"`
-	Username     string             `bson:"username"`
-	Email        string             `bson:"email"`
-	PasswordHash string             `bson:"passwordHash"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	Username     string             `bson:"username,omitempty"`
+	Email        string             `bson:"email,omitempty"`
+	PasswordHash string             `bson:"passwordHash,omitempty"`
 }
 
 type RegisterUser struct {
@@ -32,7 +32,13 @@ type LoginUser struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func CreateUser(regUser *RegisterUser) error {
+type UserResponse struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Token    string `json:"token"`
+}
+
+func CreateUser(regUser *RegisterUser) (string, error) {
 	db := common.GetDB()
 	coll := db.Collection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
@@ -44,9 +50,11 @@ func CreateUser(regUser *RegisterUser) error {
 	user.PasswordHash = utils.HashPassword(regUser.Password)
 
 	// Insert user
-	if _, err := coll.InsertOne(ctx, &user); err != nil {
+	result, err := coll.InsertOne(ctx, &user)
+
+	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return errors.New("User already exists with the same email")
+			return "", errors.New("User already exists with the same email")
 		}
 		panic(err)
 	}
@@ -61,7 +69,7 @@ func CreateUser(regUser *RegisterUser) error {
 		panic(err)
 	}
 
-	return nil
+	return result.InsertedID.(primitive.ObjectID).Hex(), err
 }
 
 func FindUserByEmail(email string) (*User, error) {

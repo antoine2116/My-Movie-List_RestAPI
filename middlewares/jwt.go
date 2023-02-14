@@ -1,4 +1,4 @@
-package handlers
+package middlewares
 
 import (
 	"apous-films-rest-api/utils"
@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TokenAuthentication() gin.HandlerFunc {
+func JwtAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		if err := utils.VerifyToken(c); err != nil {

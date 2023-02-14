@@ -25,12 +25,20 @@ func UserRegestration(c *gin.Context) {
 	}
 
 	// Insert
-	if err := models.CreateUser(regUser); err != nil {
+	userId, err := models.CreateUser(regUser)
+
+	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": "User created"})
+	userResp := models.UserResponse{
+		Username: regUser.Username,
+		Email:    regUser.Email,
+		Token:    utils.GenerateJWT(userId),
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResp})
 }
 
 func UserLogin(c *gin.Context) {
@@ -57,5 +65,11 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "success", "message": "Login successful !"})
+	userResp := models.UserResponse{
+		Username: user.Username,
+		Email:    user.Email,
+		Token:    utils.GenerateJWT(user.ID.Hex()),
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResp})
 }

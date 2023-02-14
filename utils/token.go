@@ -8,23 +8,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
-	tokenDuration = 15
+	tokenDuration = 15000
 )
 
-func GenerateJWT(userId primitive.ObjectID) (string, error) {
+func GenerateJWT(userId string) string {
 	conf := config.GetConfig()
 	secret := []byte(conf.Server.Secret)
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	token.Claims = jwt.MapClaims{
-		"exp": time.Now().Add(time.Minute * tokenDuration),
-		"iat": time.Now(),
-		"sub": userId.Hex(),
+		"exp": time.Now().Add(time.Minute * tokenDuration).Unix(),
+		"iat": time.Now().Unix(),
+		"sub": userId,
 	}
 
 	tokenString, err := token.SignedString(secret)
@@ -33,7 +32,7 @@ func GenerateJWT(userId primitive.ObjectID) (string, error) {
 		panic(err)
 	}
 
-	return tokenString, nil
+	return tokenString
 }
 
 func VerifyToken(c *gin.Context) error {
@@ -43,7 +42,7 @@ func VerifyToken(c *gin.Context) error {
 
 	token, err := jwt.Parse(stringToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexptected signing method : %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexptected signing method : %v", token.Header["alg"])
 		}
 
 		return []byte(conf.Server.Secret), nil
@@ -54,7 +53,7 @@ func VerifyToken(c *gin.Context) error {
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("Invalid Token")
+		return fmt.Errorf("invalid Token")
 	}
 
 	return nil
