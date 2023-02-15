@@ -1,4 +1,4 @@
-package models
+package users
 
 import (
 	"apous-films-rest-api/common"
@@ -32,29 +32,23 @@ type LoginUser struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type UserResponse struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Token    string `json:"token"`
-}
-
-func CreateUser(regUser *RegisterUser) (string, error) {
+func CreateUser(regUser *RegisterUser) (User, error) {
 	db := common.GetDB()
 	coll := db.Collection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
 	defer cancel()
 
-	user := User{}
-	user.Username = regUser.Username
-	user.Email = regUser.Email
-	user.PasswordHash = utils.HashPassword(regUser.Password)
+	user := User{
+		ID:           primitive.NewObjectID(),
+		Username:     regUser.Username,
+		Email:        regUser.Email,
+		PasswordHash: utils.HashPassword(regUser.Password),
+	}
 
 	// Insert user
-	result, err := coll.InsertOne(ctx, &user)
-
-	if err != nil {
+	if _, err := coll.InsertOne(ctx, &user); err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return "", errors.New("User already exists with the same email")
+			return user, errors.New("User already exists with the same email")
 		}
 		panic(err)
 	}
@@ -69,21 +63,21 @@ func CreateUser(regUser *RegisterUser) (string, error) {
 		panic(err)
 	}
 
-	return result.InsertedID.(primitive.ObjectID).Hex(), err
+	return user, nil
 }
 
-func FindUserByEmail(email string) (*User, error) {
+func FindUserByEmail(email string) (User, error) {
 	db := common.GetDB()
 	coll := db.Collection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
 	defer cancel()
 
 	filter := bson.D{{Key: "email", Value: email}}
-	var user *User
+	var user User
 
 	if err := coll.FindOne(ctx, filter).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, err
+			return user, err
 		}
 		panic(err)
 	}

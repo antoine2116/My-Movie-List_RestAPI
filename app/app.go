@@ -3,9 +3,10 @@ package app
 import (
 	"apous-films-rest-api/common"
 	"apous-films-rest-api/config"
-	"apous-films-rest-api/handlers"
 	"apous-films-rest-api/middlewares"
+	"apous-films-rest-api/users"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,14 +27,16 @@ func (a *App) Initialize(c *config.Configuration) {
 	// Tests routes
 	test := a.Router.Group("/test")
 	{
-		test.GET("/ping", handlers.Ping)
+		test.GET("/ping", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "pong"})
+		})
 	}
 
 	// Authentication routes
 	auth := a.Router.Group("/auth")
 	{
-		auth.POST("/register", handlers.UserRegestration)
-		auth.POST("/login", handlers.UserLogin)
+		auth.POST("/register", users.UserRegestration)
+		auth.POST("/login", users.UserLogin)
 	}
 
 	// API

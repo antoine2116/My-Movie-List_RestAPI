@@ -1,7 +1,6 @@
-package handlers
+package users
 
 import (
-	"apous-films-rest-api/models"
 	"apous-films-rest-api/utils"
 	"net/http"
 
@@ -10,7 +9,7 @@ import (
 )
 
 func UserRegestration(c *gin.Context) {
-	var regUser *models.RegisterUser
+	var regUser *RegisterUser
 
 	// Model validation
 	if err := c.ShouldBindJSON(&regUser); err != nil {
@@ -25,24 +24,21 @@ func UserRegestration(c *gin.Context) {
 	}
 
 	// Insert
-	userId, err := models.CreateUser(regUser)
+	user, err := CreateUser(regUser)
 
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	userResp := models.UserResponse{
-		Username: regUser.Username,
-		Email:    regUser.Email,
-		Token:    utils.GenerateJWT(userId),
-	}
+	serializer := UserSerializer{c}
+	c.Set("user_model", user)
 
-	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResp})
+	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": serializer.Response()})
 }
 
 func UserLogin(c *gin.Context) {
-	var login *models.LoginUser
+	var login *LoginUser
 
 	// Model validation
 	if err := c.ShouldBindJSON(&login); err != nil {
@@ -51,7 +47,7 @@ func UserLogin(c *gin.Context) {
 	}
 
 	// Find user
-	user, err := models.FindUserByEmail(login.Email)
+	user, err := FindUserByEmail(login.Email)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -65,11 +61,8 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 
-	userResp := models.UserResponse{
-		Username: user.Username,
-		Email:    user.Email,
-		Token:    utils.GenerateJWT(user.ID.Hex()),
-	}
+	serializer := UserSerializer{c}
+	c.Set("user_model", user)
 
-	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResp})
+	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": serializer.Response()})
 }
