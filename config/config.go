@@ -22,10 +22,10 @@ type Configuration struct {
 
 var conf *Configuration
 
-func LoadConfiguration() *Configuration {
+func LoadConfiguration(path string) *Configuration {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
-	viper.AddConfigPath("../../")
+	viper.AddConfigPath(path)
 
 	var configuration *Configuration
 

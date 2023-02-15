@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	tokenDuration = 15000
+	tokenDuration = 24
 )
 
 func GenerateJWT(userId string) string {
@@ -21,7 +21,7 @@ func GenerateJWT(userId string) string {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	token.Claims = jwt.MapClaims{
-		"exp": time.Now().Add(time.Minute * tokenDuration).Unix(),
+		"exp": time.Now().Add(time.Hour * tokenDuration).Unix(),
 		"iat": time.Now().Unix(),
 		"sub": userId,
 	}

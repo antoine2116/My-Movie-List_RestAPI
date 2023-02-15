@@ -7,7 +7,7 @@ import (
 
 func main() {
 	// Configuration
-	conf := config.LoadConfiguration()
+	conf := config.LoadConfiguration("../../")
 
 	// Initialize application
 	app := &app.App{}
