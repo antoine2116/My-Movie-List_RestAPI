@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Token
@@ -12,9 +13,9 @@ func TestGenerateJwt(t *testing.T) {
 	asserts := assert.New(t)
 
 	config.LoadConfiguration("../")
-	token := GenerateJWT("id")
+	token := GenerateJWT(string(primitive.NewObjectID().Hex()))
 
-	asserts.Len(token, 143, "token length should be 143")
+	asserts.Len(token, 172, "token length should be 172")
 }
 
 // Password
