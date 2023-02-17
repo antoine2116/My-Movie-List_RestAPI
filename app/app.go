@@ -35,8 +35,7 @@ func (a *App) Initialize(c *config.Configuration) {
 	// Authentication routes
 	auth := a.Router.Group("/auth")
 	{
-		auth.POST("/register", users.UserRegestration)
-		auth.POST("/login", users.UserLogin)
+		users.AddRoutes(auth)
 	}
 
 	// API

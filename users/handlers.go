@@ -8,56 +8,53 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func UserRegestration(c *gin.Context) {
-	var regUser *RegisterUser
+func AddRoutes(c *gin.RouterGroup) {
+	c.POST("/register", UserRegister)
+	c.POST("/login", UserLogin)
+}
 
-	// Model validation
-	if err := c.ShouldBindJSON(&regUser); err != nil {
+func UserRegister(c *gin.Context) {
+	// Bind and validate
+	validator := RegisterValidator{}
+
+	if err := validator.BindAndValidate(c); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		return
-	}
-
-	// Check password confirmation
-	if regUser.Password != regUser.PasswordConfirmation {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Passwords do not match"})
-		return
 	}
 
 	// Insert
-	user, err := CreateUser(regUser)
-
-	if err != nil {
+	if err := CreateUser(&validator.userModel); err != nil {
 		c.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
+	// Send response
 	serializer := UserSerializer{c}
-	c.Set("user_model", user)
+	c.Set("user_model", validator.userModel)
 
 	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": serializer.Response()})
 }
 
 func UserLogin(c *gin.Context) {
-	var login *LoginUser
+	// Bind
+	validator := LoginValidator{}
 
-	// Model validation
-	if err := c.ShouldBindJSON(&login); err != nil {
+	if err := validator.BindAndValidate(c); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
 	// Find user
-	user, err := FindUserByEmail(login.Email)
+	user, err := FindUserByEmail(validator.userModel.Email)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+			c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "invalid email or password"})
 			return
 		}
 	}
 
-	if err := utils.CompareHashAndPassword(user.PasswordHash, login.Password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+	if err := utils.CompareHashAndPassword(user.PasswordHash, validator.UserLogin.Password); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "invalid email or password"})
 		return
 	}
 

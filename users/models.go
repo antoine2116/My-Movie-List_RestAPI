@@ -2,7 +2,6 @@ package users
 
 import (
 	"apous-films-rest-api/common"
-	"apous-films-rest-api/utils"
 	"context"
 	"errors"
 	"time"
@@ -20,35 +19,16 @@ type User struct {
 	PasswordHash string             `bson:"passwordHash,omitempty"`
 }
 
-type RegisterUser struct {
-	Username             string `json:"username" binding:"required"`
-	Email                string `json:"email" binding:"required"`
-	Password             string `json:"password" binding:"required"`
-	PasswordConfirmation string `json:"password_confirmation" binding:"required"`
-}
-
-type LoginUser struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-func CreateUser(regUser *RegisterUser) (User, error) {
+func CreateUser(user *User) error {
 	db := common.GetDB()
 	coll := db.Collection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
 	defer cancel()
 
-	user := User{
-		ID:           primitive.NewObjectID(),
-		Username:     regUser.Username,
-		Email:        regUser.Email,
-		PasswordHash: utils.HashPassword(regUser.Password),
-	}
-
 	// Insert user
 	if _, err := coll.InsertOne(ctx, &user); err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return user, errors.New("User already exists with the same email")
+			return errors.New("User already exists with the same email")
 		}
 		panic(err)
 	}
@@ -63,7 +43,7 @@ func CreateUser(regUser *RegisterUser) (User, error) {
 		panic(err)
 	}
 
-	return user, nil
+	return nil
 }
 
 func FindUserByEmail(email string) (User, error) {

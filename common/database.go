@@ -8,10 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Database struct {
-	*mongo.Client
-}
-
 var DB *mongo.Database
 
 func InitDB(uri string) {
