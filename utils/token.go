@@ -12,7 +12,8 @@ const (
 )
 
 func GenerateJWT(userId string) string {
-	conf := config.GetConfig()
+	conf := config.LoadConfiguration("../")
+
 	secret := []byte(conf.Server.Secret)
 
 	token := jwt.New(jwt.SigningMethodHS256)

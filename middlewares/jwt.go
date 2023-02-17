@@ -22,7 +22,7 @@ func extractToken(c *gin.Context) string {
 
 func JwtAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		conf := config.GetConfig()
+		conf := config.LoadConfiguration("../")
 
 		stringToken := extractToken(c)
 

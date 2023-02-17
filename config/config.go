@@ -20,8 +20,6 @@ type Configuration struct {
 	Database DatabaseConfiguration
 }
 
-var conf *Configuration
-
 func LoadConfiguration(path string) *Configuration {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
@@ -39,11 +37,5 @@ func LoadConfiguration(path string) *Configuration {
 		log.Fatalf("Unable to decode configuration file into struct: %v", err)
 	}
 
-	conf = configuration
-
 	return configuration
-}
-
-func GetConfig() *Configuration {
-	return conf
 }
