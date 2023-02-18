@@ -38,7 +38,7 @@ func main() {
 	{
 	}
 
-	r.Run(fmt.Sprintf(":%v", conf.Server.Port))
+	common.InitDB()
 
-	common.InitDB(conf.Database.URI)
+	r.Run(fmt.Sprintf(":%v", conf.Server.Port))
 }

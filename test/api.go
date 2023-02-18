@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 
@@ -10,10 +11,12 @@ import (
 )
 
 type APITestCase struct {
-	Path           string
-	Method         string
-	Body           string
-	ExpectedStatus int
+	Path             string
+	Method           string
+	Body             string
+	ExpectedStatus   int
+	ExpectedResponse string
+	Message          string
 }
 
 func Endpoint(asserts *assert.Assertions, r *gin.Engine, testCase APITestCase) {
@@ -27,5 +30,18 @@ func Endpoint(asserts *assert.Assertions, r *gin.Engine, testCase APITestCase) {
 
 	resp := w.Result()
 
+	// Assert Response Status
 	asserts.Equal(testCase.ExpectedStatus, resp.StatusCode)
+
+	// Assert Response Body
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		panic(err)
+	}
+
+	asserts.Regexp(testCase.ExpectedResponse, string(body))
+
 }

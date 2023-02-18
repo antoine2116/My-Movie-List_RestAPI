@@ -3,5 +3,6 @@ server:
   secret: "Nobody knows about our little secret"
 
 database:
-  uri: "mongodb://localhost:27017/apous-films"
-  
+  uri: "mongodb://localhost:27017/"
+  dev: "apous-films"
+  test: "apous-films-test"

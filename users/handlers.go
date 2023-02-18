@@ -18,12 +18,13 @@ func UserRegister(c *gin.Context) {
 	validator := RegisterValidator{}
 
 	if err := validator.BindAndValidate(c); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	// Insert
 	if err := CreateUser(&validator.userModel); err != nil {
-		c.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -31,7 +32,7 @@ func UserRegister(c *gin.Context) {
 	serializer := UserSerializer{c}
 	c.Set("user_model", validator.userModel)
 
-	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": serializer.Response()})
+	c.JSON(http.StatusCreated, gin.H{"data": serializer.Response()})
 }
 
 func UserLogin(c *gin.Context) {
@@ -39,7 +40,7 @@ func UserLogin(c *gin.Context) {
 	validator := LoginValidator{}
 
 	if err := validator.BindAndValidate(c); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -48,18 +49,18 @@ func UserLogin(c *gin.Context) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "invalid email or password"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email or password"})
 			return
 		}
 	}
 
 	if err := utils.CompareHashAndPassword(user.PasswordHash, validator.UserLogin.Password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "invalid email or password"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email or password"})
 		return
 	}
 
 	serializer := UserSerializer{c}
 	c.Set("user_model", user)
 
-	c.JSON(http.StatusCreated, gin.H{"status": "success", "data": serializer.Response()})
+	c.JSON(http.StatusOK, gin.H{"data": serializer.Response()})
 }

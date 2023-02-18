@@ -12,7 +12,9 @@ type ServerConfiguration struct {
 }
 
 type DatabaseConfiguration struct {
-	URI string
+	URI  string
+	Dev  string
+	Test string
 }
 
 type Configuration struct {
