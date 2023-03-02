@@ -3,7 +3,6 @@ package main
 import (
 	"apous-films-rest-api/common"
 	"apous-films-rest-api/config"
-	"apous-films-rest-api/middlewares"
 	"apous-films-rest-api/users"
 	"fmt"
 	"net/http"
@@ -40,13 +39,14 @@ func main() {
 	// Authentication routes
 	auth := r.Group("/auth")
 	{
-		users.AddRoutes(auth)
+		users.AddUserAuthentication(auth)
 	}
 
 	// API
 	api := r.Group("/api")
-	api.Use(middlewares.JwtAuthentication())
+	api.Use(users.JwtAuthentication())
 	{
+		users.AddUserProfile(api)
 	}
 
 	common.InitDB()

@@ -1,4 +1,4 @@
-package middlewares
+package users
 
 import (
 	"apous-films-rest-api/config"
@@ -18,6 +18,17 @@ func extractToken(c *gin.Context) string {
 	}
 
 	return ""
+}
+
+func updateUserContext(c *gin.Context, userId string) {
+	var user User
+
+	if err := FindUserById(&user, userId); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.Set("user", user)
 }
 
 func JwtAuthentication() gin.HandlerFunc {
@@ -42,6 +53,11 @@ func JwtAuthentication() gin.HandlerFunc {
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Unauthorized : Invalid token"})
 			return
+		}
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			userId := claims["sub"].(string)
+			updateUserContext(c, userId)
 		}
 
 		c.Next()

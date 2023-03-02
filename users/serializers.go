@@ -7,8 +7,8 @@ import (
 )
 
 type UserResponse struct {
-	Email    string `json:"email"`
-	Token    string `json:"token"`
+	Email string `json:"email"`
+	Token string `json:"token"`
 }
 
 type UserSerializer struct {
@@ -16,10 +16,10 @@ type UserSerializer struct {
 }
 
 func (serializer *UserSerializer) Response() UserResponse {
-	userModel := serializer.c.MustGet("user_model").(User)
+	userModel := serializer.c.MustGet("user").(User)
 
 	return UserResponse{
-		Email:    userModel.Email,
-		Token:    utils.GenerateJWT(userModel.ID.Hex()),
+		Email: userModel.Email,
+		Token: utils.GenerateJWT(userModel.ID.Hex()),
 	}
 }

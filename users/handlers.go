@@ -8,9 +8,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func AddRoutes(c *gin.RouterGroup) {
+func AddUserAuthentication(c *gin.RouterGroup) {
 	c.POST("/register", UserRegister)
 	c.POST("/login", UserLogin)
+}
+
+func AddUserProfile(c *gin.RouterGroup) {
+	c.GET("/profile", UserProfile)
 }
 
 func UserRegister(c *gin.Context) {
@@ -30,7 +34,7 @@ func UserRegister(c *gin.Context) {
 
 	// Send response
 	serializer := UserSerializer{c}
-	c.Set("user_model", validator.userModel)
+	c.Set("user", validator.userModel)
 
 	c.JSON(http.StatusCreated, serializer.Response())
 }
@@ -60,7 +64,12 @@ func UserLogin(c *gin.Context) {
 	}
 
 	serializer := UserSerializer{c}
-	c.Set("user_model", user)
+	c.Set("user", user)
 
-	c.JSON(http.StatusOK, gin.H{"data": serializer.Response()})
+	c.JSON(http.StatusOK, serializer.Response())
+}
+
+func UserProfile(c *gin.Context) {
+	serializer := UserSerializer{c}
+	c.JSON(http.StatusOK, serializer.Response())
 }

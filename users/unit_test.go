@@ -43,7 +43,7 @@ func TestUserRegistration(t *testing.T) {
 
 	r := test.MockRouter()
 	auth := r.Group("/auth")
-	AddRoutes(auth)
+	AddUserAuthentication(auth)
 
 	for _, testCase := range testCases {
 		test.Endpoint(asserts, r, testCase)
@@ -94,7 +94,7 @@ func TestUserLogin(t *testing.T) {
 
 	r := test.MockRouter()
 	auth := r.Group("/auth")
-	AddRoutes(auth)
+	AddUserAuthentication(auth)
 
 	for _, testCase := range testCases {
 		test.Endpoint(asserts, r, testCase)

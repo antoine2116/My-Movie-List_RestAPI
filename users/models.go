@@ -63,3 +63,26 @@ func FindUserByEmail(email string) (User, error) {
 
 	return user, nil
 }
+
+func FindUserById(user *User, id string) error {
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	db := common.GetDB()
+	coll := db.Collection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
+	defer cancel()
+
+	filter := bson.D{{Key: "_id", Value: objectId}}
+
+	if err := coll.FindOne(ctx, filter).Decode(&user); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return err
+		}
+		panic(err)
+	}
+
+	return nil
+}
