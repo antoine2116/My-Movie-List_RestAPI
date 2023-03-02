@@ -18,15 +18,15 @@ func TestUserRegistration(t *testing.T) {
 		{
 			Path:             "/auth/register",
 			Method:           "POST",
-			Body:             `{"user": {"username": "steve", "email": "steve@gmail.com", "password": "superpass", "password_confirmation": "superpass"}}`,
+			Body:             `{"user": {"email": "steve@gmail.com", "password": "superpass", "password_confirmation": "superpass"}}`,
 			ExpectedStatus:   201,
-			ExpectedResponse: `{"data":{"username":"steve","email":"steve@gmail.com","token":"([\w-]*\.[\w-]*\.[\w-]*)"}}`,
+			ExpectedResponse: `{"data":{"email":"steve@gmail.com","token":"([\w-]*\.[\w-]*\.[\w-]*)"}}`,
 			Message:          "Valid data should return StatusCreated (201)",
 		},
 		{
 			Path:             "/auth/register",
 			Method:           "POST",
-			Body:             `{"user": {"username": "steve", "email": "steve@gmail.com", "password": "superpass", "password_confirmation": "wrongconfirmation"}}`,
+			Body:             `{"user": {"email": "steve@gmail.com", "password": "superpass", "password_confirmation": "wrongconfirmation"}}`,
 			ExpectedStatus:   400,
 			ExpectedResponse: `{"error":"passwords do not match"}`,
 			Message:          "Wrong password confirmation should return StatusBadRequest (400)",
@@ -34,7 +34,7 @@ func TestUserRegistration(t *testing.T) {
 		{
 			Path:             "/auth/register",
 			Method:           "POST",
-			Body:             `{"user": {"username": "steve", "email": "steve@gmail.com", "password": "superpass", "password_confirmation": "superpass"}}`,
+			Body:             `{"user": {"email": "steve@gmail.com", "password": "superpass", "password_confirmation": "superpass"}}`,
 			ExpectedStatus:   409,
 			ExpectedResponse: `{"error":"User already exists with the same email"}`,
 			Message:          "Same email as another user should return StatusConflict (409)",
@@ -59,7 +59,6 @@ func TestUserLogin(t *testing.T) {
 
 	// Insert test user
 	user := User{
-		Username:     "steve",
 		Email:        "steve@gmail.com",
 		PasswordHash: utils.HashPassword("superpass"),
 	}
@@ -72,7 +71,7 @@ func TestUserLogin(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com", "password": "superpass"}}`,
 			ExpectedStatus:   200,
-			ExpectedResponse: `{"data":{"username":"steve","email":"steve@gmail.com","token":"([\w-]*\.[\w-]*\.[\w-]*)"}}`,
+			ExpectedResponse: `{"data":{"email":"steve@gmail.com","token":"([\w-]*\.[\w-]*\.[\w-]*)"}}`,
 			Message:          "Valid data should return StatusOK (200)",
 		},
 		{

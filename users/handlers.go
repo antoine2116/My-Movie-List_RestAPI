@@ -32,7 +32,7 @@ func UserRegister(c *gin.Context) {
 	serializer := UserSerializer{c}
 	c.Set("user_model", validator.userModel)
 
-	c.JSON(http.StatusCreated, gin.H{"data": serializer.Response()})
+	c.JSON(http.StatusCreated, serializer.Response())
 }
 
 func UserLogin(c *gin.Context) {
