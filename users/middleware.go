@@ -38,7 +38,7 @@ func JwtAuthentication() gin.HandlerFunc {
 		stringToken := extractToken(c)
 
 		if stringToken == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Unauthorized : Missing token or invalid format"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized : Missing token or invalid format"})
 			return
 		}
 

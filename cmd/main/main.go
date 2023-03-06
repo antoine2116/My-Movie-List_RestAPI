@@ -42,6 +42,12 @@ func main() {
 		users.AddUserAuthentication(auth)
 	}
 
+	// OAuth routes
+	oauth := r.Group("/oauth")
+	{
+		users.AddGoogleOAuth(oauth)
+	}
+
 	// API
 	api := r.Group("/api")
 	api.Use(users.JwtAuthentication())
