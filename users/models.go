@@ -16,6 +16,7 @@ type User struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
 	Email        string             `bson:"email,omitempty"`
 	PasswordHash string             `bson:"passwordHash,omitempty"`
+	Provider     string             `bson:"provider,omitempty"`
 }
 
 func CreateUser(user *User) error {
@@ -32,9 +33,9 @@ func CreateUser(user *User) error {
 		panic(err)
 	}
 
-	// Create unique index for email
+	// Create unique index for email & provider
 	indexModel := mongo.IndexModel{
-		Keys:    bson.D{{Key: "email", Value: -1}},
+		Keys:    bson.D{{Key: "email", Value: -1}, {Key: "provider", Value: -1}},
 		Options: options.Index().SetUnique(true),
 	}
 

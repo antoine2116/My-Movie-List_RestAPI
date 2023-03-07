@@ -92,7 +92,7 @@ func GoogleLogin(c *gin.Context) {
 	var googleUser GoogleUser
 
 	if err := GetGoogleUser(token, &googleUser); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error during google authentication"})
 		return
 	}
 
@@ -101,6 +101,9 @@ func GoogleLogin(c *gin.Context) {
 	// If user does not exists, insert the new user
 	if err == mongo.ErrNoDocuments {
 		user.ID = primitive.NewObjectID()
+		user.Email = googleUser.Email
+		user.Provider = "google"
+		user.PasswordHash = ""
 
 		if err := CreateUser(&user); err != nil {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})

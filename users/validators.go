@@ -35,6 +35,7 @@ func (v *RegisterValidator) BindAndValidate(c *gin.Context) error {
 	v.userModel.ID = primitive.NewObjectID()
 	v.userModel.Email = v.UserRegister.Email
 	v.userModel.PasswordHash = utils.HashPassword(v.UserRegister.Password)
+	v.userModel.Provider = "local"
 
 	return nil
 }
