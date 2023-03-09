@@ -1,0 +1,13 @@
+server:
+  port: 8081
+  secret: "Nobody knows about our little secret"
+
+database:
+  uri: "mongodb://localhost:27017/"
+  dev: "apous-films"
+  test: "apous-films-test"
+
+google_oauth:
+  client_id: "210461145121-bglhdls62r50kr1n8kbi7eb0ov7nm0bo.apps.googleusercontent.com"
+  client_secret: "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"
+  redirect_url: "http://localhost:3000"

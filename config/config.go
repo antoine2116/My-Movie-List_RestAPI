@@ -7,24 +7,31 @@ import (
 )
 
 type ServerConfiguration struct {
-	Port   int
-	Secret string
+	Port   int    `mapstructure:"port"`
+	Secret string `mapstructure:"secret"`
 }
 
 type DatabaseConfiguration struct {
-	URI  string
-	Dev  string
-	Test string
+	URI  string `mapstructure:"uri"`
+	Dev  string `mapstructure:"dev"`
+	Test string `mapstructure:"test"`
+}
+
+type GoogleOuathConfiguration struct {
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	RedirectURL  string `mapstructure:"redirect_url"`
 }
 
 type Configuration struct {
-	Server   ServerConfiguration
-	Database DatabaseConfiguration
+	Server   ServerConfiguration      `mapstructure:"server"`
+	Database DatabaseConfiguration    `mapstructure:"database"`
+	Google   GoogleOuathConfiguration `mapstructure:"google_oauth"`
 }
 
 func LoadConfiguration(path string) *Configuration {
 	viper.SetConfigName("config")
-	viper.SetConfigType("yml")
+	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 
 	var configuration *Configuration
