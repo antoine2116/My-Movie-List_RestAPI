@@ -2,7 +2,9 @@ package oauth
 
 import (
 	"apous-films-rest-api/config"
+	"context"
 	"encoding/json"
+	"log"
 
 	"golang.org/x/oauth2"
 )
@@ -37,20 +39,20 @@ func (p *GoogleProvider) Init() {
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://accounts.google.com/o/oauth2/auth",
-			TokenURL: "https://accounts.google.com/o/oauth2/auth",
+			TokenURL: "https://oauth2.googleapis.com/token",
 		},
 	}
 }
 
 func (p *GoogleProvider) GetGoogleUser(code string, user *GoogleUser) error {
-
-	token, err := p.config.Exchange(oauth2.NoContext, code)
+	log.Println("code: ", code)
+	token, err := p.config.Exchange(context.TODO(), code, oauth2.AccessTypeOffline)
 
 	if err != nil {
 		return err
 	}
 
-	client := p.config.Client(oauth2.NoContext, token)
+	client := p.config.Client(context.TODO(), token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 
 	if err != nil {
