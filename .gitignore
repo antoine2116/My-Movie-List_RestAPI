@@ -19,3 +19,6 @@ go.work
 
 # VS Code
 .vscode/
+
+# Config file
+config.yaml
