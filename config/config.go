@@ -7,8 +7,9 @@ import (
 )
 
 type ServerConfiguration struct {
-	Port   int    `mapstructure:"port"`
-	Secret string `mapstructure:"secret"`
+	Port          int    `mapstructure:"port"`
+	Secret        string `mapstructure:"secret"`
+	TokenDuration int    `mapstructure:"token_duration"` // in hours
 }
 
 type DatabaseConfiguration struct {
@@ -29,22 +30,22 @@ type Configuration struct {
 	Google   GoogleOuathConfiguration `mapstructure:"google_oauth"`
 }
 
+var Config *Configuration
+
 func LoadConfiguration(path string) *Configuration {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 
-	var configuration *Configuration
-
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading configuration file : %s", err)
 	}
 
-	err := viper.Unmarshal(&configuration)
+	err := viper.Unmarshal(&Config)
 
 	if err != nil {
 		log.Fatalf("Unable to decode configuration file into struct: %v", err)
 	}
 
-	return configuration
+	return Config
 }

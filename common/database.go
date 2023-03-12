@@ -15,13 +15,12 @@ import (
 var DB *mongo.Database
 
 func InitDB() {
-	conf := config.LoadConfiguration("../")
 
 	// Create mongo client
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.Database.URI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Config.Database.URI))
 
 	// Connect to the database
 	if err != nil {
@@ -36,9 +35,9 @@ func InitDB() {
 	log.Println("Connected to DB")
 
 	if flag.Lookup("test.v") == nil {
-		DB = client.Database(conf.Database.Dev)
+		DB = client.Database(config.Config.Database.Dev)
 	} else {
-		DB = client.Database(conf.Database.Test)
+		DB = client.Database(config.Config.Database.Test)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -75,49 +76,6 @@ func UserLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, serializer.Response())
 }
 
-func UserProfile(c *gin.Context) {
-	serializer := UserSerializer{c}
-	c.JSON(http.StatusOK, serializer.Response())
-}
-
-// func GoogleLogin(c *gin.Context) {
-// 	// Get token from query
-// 	token := c.Query("token")
-
-// 	if token == "" {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing token"})
-// 		return
-// 	}
-
-// 	// Get google user
-// 	var googleUser GoogleUser
-
-// 	if err := GetGoogleUser(token, &googleUser); err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error during google authentication"})
-// 		return
-// 	}
-
-// 	user, err := FindUserByEmail(googleUser.Email)
-
-// 	// If user does not exists, insert the new user
-// 	if err == mongo.ErrNoDocuments {
-// 		user.ID = primitive.NewObjectID()
-// 		user.Email = googleUser.Email
-// 		user.Provider = "google"
-// 		user.PasswordHash = ""
-
-// 		if err := CreateUser(&user); err != nil {
-// 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 	}
-
-// 	serializer := UserSerializer{c}
-// 	c.Set("user", user)
-
-// 	c.JSON(http.StatusOK, serializer.Response())
-// }
-
 func GoogleLogin(c *gin.Context) {
 	code := c.Query("code")
 
@@ -136,5 +94,29 @@ func GoogleLogin(c *gin.Context) {
 		return
 	}
 
-	log.Println(googleUser)
+	user, err := FindUserByEmail(googleUser.Email)
+
+	// If user does not exists, insert the new user
+	if err == mongo.ErrNoDocuments {
+		user.ID = primitive.NewObjectID()
+		user.Email = googleUser.Email
+		user.Provider = "google"
+		user.PasswordHash = ""
+
+		if err := CreateUser(&user); err != nil {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	// Generate token
+	token := utils.GenerateJWT(user.ID.Hex())
+	utils.SetCookieToken(c, token)
+
+	c.Redirect(http.StatusPermanentRedirect, "http://localhost:3000")
+}
+
+func UserProfile(c *gin.Context) {
+	serializer := UserSerializer{c}
+	c.JSON(http.StatusOK, serializer.Response())
 }

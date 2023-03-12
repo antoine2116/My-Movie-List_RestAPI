@@ -33,8 +33,6 @@ func updateUserContext(c *gin.Context, userId string) {
 
 func JwtAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		conf := config.LoadConfiguration("../")
-
 		stringToken := extractToken(c)
 
 		if stringToken == "" {
@@ -47,7 +45,7 @@ func JwtAuthentication() gin.HandlerFunc {
 				return nil, fmt.Errorf("unexptected signing method : %v", token.Header["alg"])
 			}
 
-			return []byte(conf.Server.Secret), nil
+			return []byte(config.Config.Server.Secret), nil
 		})
 
 		if err != nil || !token.Valid {

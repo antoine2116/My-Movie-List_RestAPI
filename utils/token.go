@@ -7,19 +7,13 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const (
-	tokenDuration = 24
-)
-
 func GenerateJWT(userId string) string {
-	conf := config.LoadConfiguration("../")
-
-	secret := []byte(conf.Server.Secret)
+	secret := []byte(config.Config.Server.Secret)
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	token.Claims = jwt.MapClaims{
-		"exp": time.Now().Add(time.Hour * tokenDuration).Unix(),
+		"exp": time.Now().Add(time.Hour * time.Duration(config.Config.Server.TokenDuration)).Unix(),
 		"iat": time.Now().Unix(),
 		"sub": userId,
 	}
