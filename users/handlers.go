@@ -1,6 +1,7 @@
 package users
 
 import (
+	"apous-films-rest-api/config"
 	"apous-films-rest-api/oauth"
 	"apous-films-rest-api/utils"
 	"log"
@@ -20,8 +21,9 @@ func AddUserProfile(c *gin.RouterGroup) {
 	c.GET("/profile", UserProfile)
 }
 
-func AddGoogleOAuth(c *gin.RouterGroup) {
+func AddOAuth(c *gin.RouterGroup) {
 	c.GET("/google/callback", GoogleLogin)
+	c.GET("/github/callback", GitHubLogin)
 }
 
 func UserRegister(c *gin.Context) {
@@ -113,7 +115,47 @@ func GoogleLogin(c *gin.Context) {
 	token := utils.GenerateJWT(user.ID.Hex())
 	utils.SetCookieToken(c, token)
 
-	c.Redirect(http.StatusPermanentRedirect, "http://localhost:3000")
+	c.Redirect(http.StatusPermanentRedirect, config.Config.Client.URI)
+}
+
+func GitHubLogin(c *gin.Context) {
+	code := c.Query("code")
+
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
+		return
+	}
+
+	// Get google user
+	var gitHubUser oauth.GitHubUser
+	gp := oauth.NewGitHubProvider()
+
+	if err := gp.GetGitHubUser(code, &gitHubUser); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to perform google authentication"})
+		return
+	}
+
+	user, err := FindUserByEmail(gitHubUser.Email)
+
+	// If user does not exists, insert the new user
+	if err == mongo.ErrNoDocuments {
+		user.ID = primitive.NewObjectID()
+		user.Email = gitHubUser.Email
+		user.Provider = "github"
+		user.PasswordHash = ""
+
+		if err := CreateUser(&user); err != nil {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	// Generate token
+	token := utils.GenerateJWT(user.ID.Hex())
+	utils.SetCookieToken(c, token)
+
+	c.Redirect(http.StatusPermanentRedirect, config.Config.Client.URI)
 }
 
 func UserProfile(c *gin.Context) {

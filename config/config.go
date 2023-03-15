@@ -12,13 +12,23 @@ type ServerConfiguration struct {
 	TokenDuration int    `mapstructure:"token_duration"` // in hours
 }
 
+type ClientConfiguration struct {
+	URI string `mapstructure:"uri"`
+}
+
 type DatabaseConfiguration struct {
 	URI  string `mapstructure:"uri"`
 	Dev  string `mapstructure:"dev"`
 	Test string `mapstructure:"test"`
 }
 
-type GoogleOuathConfiguration struct {
+type GoogleOAuthConfiguration struct {
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	RedirectURL  string `mapstructure:"redirect_url"`
+}
+
+type GitHubOAuthConfiguration struct {
 	ClientID     string `mapstructure:"client_id"`
 	ClientSecret string `mapstructure:"client_secret"`
 	RedirectURL  string `mapstructure:"redirect_url"`
@@ -26,8 +36,10 @@ type GoogleOuathConfiguration struct {
 
 type Configuration struct {
 	Server   ServerConfiguration      `mapstructure:"server"`
+	Client   ClientConfiguration      `mapstructure:"client"`
 	Database DatabaseConfiguration    `mapstructure:"database"`
-	Google   GoogleOuathConfiguration `mapstructure:"google_oauth"`
+	Google   GoogleOAuthConfiguration `mapstructure:"google_oauth"`
+	GitHub   GitHubOAuthConfiguration `mapstructure:"github_oauth"`
 }
 
 var Config *Configuration

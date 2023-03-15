@@ -45,7 +45,7 @@ func main() {
 	// OAuth routes
 	oauth := r.Group("/oauth")
 	{
-		users.AddGoogleOAuth(oauth)
+		users.AddOAuth(oauth)
 	}
 
 	// API
