@@ -1,32 +1,58 @@
 package main
 
 import (
-	"apous-films-rest-api/common"
 	"apous-films-rest-api/config"
+	"apous-films-rest-api/database"
+	"apous-films-rest-api/router"
 	"apous-films-rest-api/users"
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
 	// Load config
-	conf := config.LoadConfiguration("../../")
+	cfg := config.LoadConfiguration("../../")
 
+	// Connect to the database
+	co := options.Client().ApplyURI(cfg.Database.URI)
+	client, err := mongo.NewClient(co)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	log.Printf("Database connection established")
+
+	db := database.New(client.Database(cfg.Database.Dev))
+
+	r := buildRouting(db, cfg)
+
+	r.Run(fmt.Sprintf(":%v", cfg.Server.Port))
+}
+
+func buildRouting(db *database.DB, cfg *config.Config) *gin.Engine {
 	// Router
-	r := common.NewRouter()
-
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	r := router.New()
 
 	// Tests routes
 	test := r.Group("/test")
@@ -39,23 +65,16 @@ func main() {
 	// Authentication routes
 	auth := r.Group("/auth")
 	{
-		users.AddUserAuthentication(auth)
-	}
-
-	// OAuth routes
-	oauth := r.Group("/oauth")
-	{
-		users.AddOAuth(oauth)
+		users.RegisterHandlers(auth,
+			users.NewService(users.NewRepository(db), cfg.Server.Secret, cfg.Server.TokenDuration, cfg.Google, cfg.GitHub),
+		)
 	}
 
 	// API
 	api := r.Group("/api")
 	api.Use(users.JwtAuthentication())
 	{
-		users.AddUserProfile(api)
 	}
 
-	common.InitDB()
-
-	r.Run(fmt.Sprintf(":%v", conf.Server.Port))
+	return r
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // --------------- Register ----------------
@@ -15,8 +14,6 @@ type RegisterValidator struct {
 		Password             string `json:"password" binding:"required"`
 		PasswordConfirmation string `json:"passwordConfirmation" binding:"required"`
 	} `json:"user"`
-
-	userModel User `json:"-"`
 }
 
 func (v *RegisterValidator) BindAndValidate(c *gin.Context) error {
@@ -30,12 +27,6 @@ func (v *RegisterValidator) BindAndValidate(c *gin.Context) error {
 	if v.UserRegister.Password != v.UserRegister.PasswordConfirmation {
 		return errors.New("passwords do not match")
 	}
-
-	// Map
-	v.userModel.ID = primitive.NewObjectID()
-	v.userModel.Email = v.UserRegister.Email
-	v.userModel.PasswordHash = utils.HashPassword(v.UserRegister.Password)
-	v.userModel.Provider = "local"
 
 	return nil
 }

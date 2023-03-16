@@ -12,13 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type User struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty"`
-	Email        string             `bson:"email,omitempty"`
-	PasswordHash string             `bson:"passwordHash,omitempty"`
-	Provider     string             `bson:"provider,omitempty"`
-}
-
 func CreateUser(user *User) error {
 	db := common.GetDB()
 	coll := db.Collection("users")
