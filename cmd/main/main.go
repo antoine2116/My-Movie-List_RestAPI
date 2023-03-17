@@ -3,6 +3,7 @@ package main
 import (
 	"apous-films-rest-api/config"
 	"apous-films-rest-api/database"
+	"apous-films-rest-api/oauth"
 	"apous-films-rest-api/router"
 	"apous-films-rest-api/users"
 	"context"
@@ -18,7 +19,7 @@ import (
 
 func main() {
 	// Load config
-	cfg := config.LoadConfiguration("../../")
+	cfg := config.Load("../../")
 
 	// Connect to the database
 	co := options.Client().ApplyURI(cfg.Database.URI)
@@ -66,13 +67,18 @@ func buildRouting(db *database.DB, cfg *config.Config) *gin.Engine {
 	auth := r.Group("/auth")
 	{
 		users.RegisterHandlers(auth,
-			users.NewService(users.NewRepository(db), cfg.Server.Secret, cfg.Server.TokenDuration, cfg.Google, cfg.GitHub),
+			users.NewService(users.NewRepository(db), 
+				cfg.Server.Secret, 
+				cfg.Server.TokenDuration, 
+				oauth.NewGoogleProvider(cfg.Google), 
+				oauth.NewGitHubProvider(cfg.GitHub)),
+			cfg.Client.URI,
 		)
 	}
 
 	// API
 	api := r.Group("/api")
-	api.Use(users.JwtAuthentication())
+	api.Use(users.JwtAuthentication(cfg.Server.Secret))
 	{
 	}
 

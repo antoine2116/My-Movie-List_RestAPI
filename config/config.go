@@ -42,7 +42,7 @@ type Config struct {
 	GitHub   GitHubConfig   `mapstructure:"github_oauth"`
 }
 
-func LoadConfig(path string) *Config {
+func Load(path string) *Config {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)

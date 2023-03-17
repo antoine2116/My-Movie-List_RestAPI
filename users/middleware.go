@@ -1,7 +1,6 @@
 package users
 
 import (
-	"apous-films-rest-api/config"
 	"fmt"
 	"net/http"
 	"strings"
@@ -20,23 +19,12 @@ func extractToken(c *gin.Context) string {
 	return ""
 }
 
-func updateUserContext(c *gin.Context, userId string) {
-	var user User
-
-	if err := FindUserById(&user, userId); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
-		return
-	}
-
-	c.Set("user", user)
-}
-
-func JwtAuthentication() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		stringToken := extractToken(c)
+func JwtAuthentication(secret string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		stringToken := extractToken(ctx)
 
 		if stringToken == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized : Missing token or invalid format"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized : Missing token or invalid format"})
 			return
 		}
 
@@ -45,19 +33,19 @@ func JwtAuthentication() gin.HandlerFunc {
 				return nil, fmt.Errorf("unexptected signing method : %v", token.Header["alg"])
 			}
 
-			return []byte(config.Config.Server.Secret), nil
+			return []byte(secret), nil
 		})
 
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Unauthorized : Invalid token"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Unauthorized : Invalid token"})
 			return
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			userId := claims["sub"].(string)
-			updateUserContext(c, userId)
+			ctx.Set("user_id", userId)
 		}
 
-		c.Next()
+		ctx.Next()
 	}
 }

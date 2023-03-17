@@ -4,14 +4,9 @@ import (
 	"apous-films-rest-api/config"
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"golang.org/x/oauth2"
 )
-
-type GitHubUser struct {
-	Email string `json:"email"`
-}
 
 type UserEmail struct {
 	Email      string `json:"email"`
@@ -24,40 +19,35 @@ type GitHubProvider struct {
 	config *oauth2.Config
 }
 
-func NewGitHubProvider() *GitHubProvider {
-	p := &GitHubProvider{}
-	p.Init()
-	return p
-}
-
-func (p *GitHubProvider) Init() {
-
-	p.config = &oauth2.Config{
-		ClientID:     config.Config.GitHub.ClientID,
-		ClientSecret: config.Config.GitHub.ClientSecret,
-		RedirectURL:  config.Config.GitHub.RedirectURL,
-		Scopes:       []string{"read:user", "user:email"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://github.com/login/oauth/authorize",
-			TokenURL: "https://github.com/login/oauth/access_token",
+func NewGitHubProvider(cfg config.GitHubConfig) GitHubProvider {
+	return GitHubProvider{
+		&oauth2.Config{
+			ClientID:     cfg.ClientID,
+			ClientSecret: cfg.ClientSecret,
+			RedirectURL:  cfg.RedirectURL,
+			Scopes:       []string{"read:user", "user:email"},
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  "https://github.com/login/oauth/authorize",
+				TokenURL: "https://github.com/login/oauth/access_token",
+			},
 		},
 	}
 }
 
-func (p *GitHubProvider) GetGitHubUser(code string, user *GitHubUser) error {
+func (p *GitHubProvider) GetUserEmail(ctx context.Context, code string) (string, error) {
 	// Exchange will do the handshake to retrieve the initial access token.
-	token, err := p.config.Exchange(context.TODO(), code)
+	token, err := p.config.Exchange(ctx, code)
 
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println(token)
-	// Make a request to the GitHub API with to get the user's profile.
-	client := p.config.Client(context.TODO(), token)
+
+	// Make a request to the GitHub API with to get the user's emails
+	client := p.config.Client(ctx, token)
 	resp, err := client.Get("https://api.github.com/user/emails")
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer resp.Body.Close()
@@ -67,15 +57,15 @@ func (p *GitHubProvider) GetGitHubUser(code string, user *GitHubUser) error {
 	err = json.NewDecoder(resp.Body).Decode(&emails)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
+	// Return the user's primary email
 	for _, email := range emails {
 		if email.Primary {
-			user.Email = email.Email
-			break
+			return email.Email, nil
 		}
 	}
 
-	return nil
+	return "", nil
 }

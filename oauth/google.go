@@ -22,38 +22,35 @@ type GoogleProvider struct {
 	config *oauth2.Config
 }
 
-func NewGoogleProvider() *GoogleProvider {
-	p := &GoogleProvider{}
-	p.Init()
-	return p
-}
-
-func (p *GoogleProvider) Init() {
-
-	p.config = &oauth2.Config{
-		ClientID:     config.Config.Google.ClientID,
-		ClientSecret: config.Config.Google.ClientSecret,
-		RedirectURL:  config.Config.Google.RedirectURL,
-		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://accounts.google.com/o/oauth2/auth",
-			TokenURL: "https://oauth2.googleapis.com/token",
+func NewGoogleProvider(cfg config.GoogleConfig) GoogleProvider {
+	return GoogleProvider{
+		&oauth2.Config{
+			ClientID:     cfg.ClientID,
+			ClientSecret: cfg.ClientSecret,
+			RedirectURL:  cfg.RedirectURL,
+			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  "https://accounts.google.com/o/oauth2/auth",
+				TokenURL: "https://oauth2.googleapis.com/token",
+			},
 		},
 	}
 }
 
-func (p *GoogleProvider) GetGoogleUser(code string, user *GoogleUser) error {
-	token, err := p.config.Exchange(context.TODO(), code, oauth2.AccessTypeOffline)
+func (p *GoogleProvider) GetUserEmail(ctx context.Context, code string) (string, error) {
+	// Exchange will do the handshake to retrieve the initial access token.
+	token, err := p.config.Exchange(ctx, code, oauth2.AccessTypeOffline)
 
 	if err != nil {
-		return err
+		return "", err
 	}
+	user := GoogleUser{}
 
-	client := p.config.Client(context.TODO(), token)
+	client := p.config.Client(ctx, token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer resp.Body.Close()
@@ -61,8 +58,8 @@ func (p *GoogleProvider) GetGoogleUser(code string, user *GoogleUser) error {
 	err = json.NewDecoder(resp.Body).Decode(&user)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return user.Email, err
 }

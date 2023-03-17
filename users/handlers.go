@@ -1,175 +1,140 @@
 package users
 
 import (
-	"apous-films-rest-api/config"
-	"apous-films-rest-api/oauth"
-	"apous-films-rest-api/utils"
-	"log"
+	"apous-films-rest-api/cookies"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RegisterHandlers(c *gin.RouterGroup, s Service) {
+func RegisterHandlers(c *gin.RouterGroup, s Service, clientURI string) {
 	c.POST("/register", UserRegister(s))
 	c.POST("/login", UserLogin(s))
-	c.GET("/google/callback", GoogleLogin(s))
-	c.GET("/github/callback", GitHubLogin(s))
+	c.GET("/google/callback", GoogleLogin(s, clientURI))
+	c.GET("/github/callback", GitHubLogin(s, clientURI))
 	c.GET("/profile", UserProfile(s))
 }
 
 func UserRegister(s Service) gin.HandlerFunc {
-	fn := func(c *gin.Context) {
+	fn := func(ctx *gin.Context) {
 		// Bind and validate
 		v := RegisterValidator{}
 
-		if err := v.BindAndValidate(c); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if err := v.BindAndValidate(ctx); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		// Register
-		token, err := s.Register(v.UserRegister.Email, v.UserRegister.Password)
+		token, err := s.Register(ctx, v.UserRegister.Email, v.UserRegister.Password)
 
 		if err != nil {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusCreated, token)
+		ctx.JSON(http.StatusCreated, gin.H{"token": token})
 	}
 
 	return gin.HandlerFunc(fn)
 }
 
 func UserLogin(s Service) gin.HandlerFunc {
-	fn := func(c *gin.Context) {
+	fn := func(ctx *gin.Context) {
 		// Bind
-		validator := LoginValidator{}
+		v := LoginValidator{}
 
-		if err := validator.BindAndValidate(c); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if err := v.BindAndValidate(ctx); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		// Find user
-		user, err := FindUserByEmail(validator.userModel.Email)
+		// Register
+		token, err := s.Login(ctx, v.UserLogin.Email, v.UserLogin.Password)
 
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email or password"})
-				return
-			}
-		}
-
-		if err := utils.CompareHashAndPassword(user.PasswordHash, validator.UserLogin.Password); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email or password"})
+			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 
-		serializer := UserSerializer{c}
-		c.Set("user", user)
-
-		c.JSON(http.StatusOK, serializer.Response())
+		ctx.JSON(http.StatusCreated, gin.H{"token": token})
 	}
 
 	return gin.HandlerFunc(fn)
 }
 
-func GoogleLogin(s Service) gin.HandlerFunc {
-	fn := func(c *gin.Context) {
-		code := c.Query("code")
+func GoogleLogin(s Service, clientURI string) gin.HandlerFunc {
+	fn := func(ctx *gin.Context) {
+		// Extract code from query
+		code := ctx.Query("code")
 
 		if code == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
 			return
 		}
 
-		// Get google user
-		var googleUser oauth.GoogleUser
-		gp := oauth.NewGoogleProvider()
+		// Login
+		token, err := s.GoogleLogin(ctx, code)
 
-		if err := gp.GetGoogleUser(code, &googleUser); err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to perform google authentication"})
+		if err != nil {
+			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 
-		user, err := FindUserByEmail(googleUser.Email)
+		// Set cookie
+		cookies.SetToken(ctx, token)
 
-		// If user does not exists, insert the new user
-		if err == mongo.ErrNoDocuments {
-			user.ID = primitive.NewObjectID()
-			user.Email = googleUser.Email
-			user.Provider = "google"
-			user.PasswordHash = ""
-
-			if err := CreateUser(&user); err != nil {
-				c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-				return
-			}
-		}
-
-		// Generate token
-		token := utils.GenerateJWT(user.ID.Hex())
-		utils.SetCookieToken(c, token)
-
-		c.Redirect(http.StatusPermanentRedirect, config.Config.Client.URI)
+		// Redirect to client
+		ctx.Redirect(http.StatusPermanentRedirect, clientURI)
 	}
 
 	return gin.HandlerFunc(fn)
 }
 
-func GitHubLogin(s Service) gin.HandlerFunc {
-	fn := func(c *gin.Context) {
-		code := c.Query("code")
+func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
+	fn := func(ctx *gin.Context) {
+		code := ctx.Query("code")
 
 		if code == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
 			return
 		}
 
-		// Get google user
-		var gitHubUser oauth.GitHubUser
-		gp := oauth.NewGitHubProvider()
+		// Login
+		token, err := s.GitHubLogin(ctx, code)
 
-		if err := gp.GetGitHubUser(code, &gitHubUser); err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to perform google authentication"})
+		if err != nil {
+			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 
-		user, err := FindUserByEmail(gitHubUser.Email)
+		// Set cookie
+		cookies.SetToken(ctx, token)
 
-		// If user does not exists, insert the new user
-		if err == mongo.ErrNoDocuments {
-			user.ID = primitive.NewObjectID()
-			user.Email = gitHubUser.Email
-			user.Provider = "github"
-			user.PasswordHash = ""
-
-			if err := CreateUser(&user); err != nil {
-				c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-				return
-			}
-		}
-
-		// Generate token
-		token := utils.GenerateJWT(user.ID.Hex())
-		utils.SetCookieToken(c, token)
-
-		c.Redirect(http.StatusPermanentRedirect, config.Config.Client.URI)
+		// Redirect to client
+		ctx.Redirect(http.StatusPermanentRedirect, clientURI)
 	}
 
 	return gin.HandlerFunc(fn)
 }
 
 func UserProfile(s Service) gin.HandlerFunc {
-	fn := func(c *gin.Context) {
-		serializer := UserSerializer{c}
-		c.JSON(http.StatusOK, serializer.Response())
+	fn := func(ctx *gin.Context) {
+		// Get the current user id
+		userId, ok := ctx.Get("user_id")
+
+		if !ok {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		}
+
+		// Get the user
+		user, err := s.GetById(ctx, userId.(string))
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"user": user})
 	}
 
 	return gin.HandlerFunc(fn)

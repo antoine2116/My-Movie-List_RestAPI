@@ -1,7 +1,7 @@
-package utils
+package cookies
 
 import "github.com/gin-gonic/gin"
 
-func SetCookieToken(c *gin.Context, token string) {
+func SetToken(c *gin.Context, token string) {
 	c.SetCookie("token", token, 60*60*24, "/", "", true, false)
 }
