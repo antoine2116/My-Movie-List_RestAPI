@@ -19,8 +19,22 @@ func extractToken(c *gin.Context) string {
 	return ""
 }
 
+type CurrentUser struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
+const (
+	userKey = "curr_user"
+)
+
+func GetCurrentUser(ctx *gin.Context) CurrentUser {
+	return ctx.Value(userKey).(CurrentUser)
+}
+
 func JwtAuthentication(secret string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// Extract token from request
 		stringToken := extractToken(ctx)
 
 		if stringToken == "" {
@@ -28,6 +42,7 @@ func JwtAuthentication(secret string) gin.HandlerFunc {
 			return
 		}
 
+		// Validate token
 		token, err := jwt.Parse(stringToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexptected signing method : %v", token.Header["alg"])
@@ -41,9 +56,12 @@ func JwtAuthentication(secret string) gin.HandlerFunc {
 			return
 		}
 
+		// Set current user
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			userId := claims["sub"].(string)
-			ctx.Set("user_id", userId)
+			ctx.Set(userKey, CurrentUser{
+				ID:    claims["id"].(string),
+				Email: claims["email"].(string),
+			})
 		}
 
 		ctx.Next()

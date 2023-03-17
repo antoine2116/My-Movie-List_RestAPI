@@ -67,10 +67,10 @@ func buildRouting(db *database.DB, cfg *config.Config) *gin.Engine {
 	auth := r.Group("/auth")
 	{
 		users.RegisterHandlers(auth,
-			users.NewService(users.NewRepository(db), 
-				cfg.Server.Secret, 
-				cfg.Server.TokenDuration, 
-				oauth.NewGoogleProvider(cfg.Google), 
+			users.NewService(users.NewRepository(db),
+				cfg.Server.Secret,
+				cfg.Server.TokenDuration,
+				oauth.NewGoogleProvider(cfg.Google),
 				oauth.NewGitHubProvider(cfg.GitHub)),
 			cfg.Client.URI,
 		)
@@ -80,6 +80,7 @@ func buildRouting(db *database.DB, cfg *config.Config) *gin.Engine {
 	api := r.Group("/api")
 	api.Use(users.JwtAuthentication(cfg.Server.Secret))
 	{
+		users.RegisterAuthenticatedHandlers(api)
 	}
 
 	return r

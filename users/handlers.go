@@ -12,7 +12,10 @@ func RegisterHandlers(c *gin.RouterGroup, s Service, clientURI string) {
 	c.POST("/login", UserLogin(s))
 	c.GET("/google/callback", GoogleLogin(s, clientURI))
 	c.GET("/github/callback", GitHubLogin(s, clientURI))
-	c.GET("/profile", UserProfile(s))
+}
+
+func RegisterAuthenticatedHandlers(c *gin.RouterGroup) {
+	c.GET("/profile", UserProfile())
 }
 
 func UserRegister(s Service) gin.HandlerFunc {
@@ -57,7 +60,7 @@ func UserLogin(s Service) gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusCreated, gin.H{"token": token})
+		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 
 	return gin.HandlerFunc(fn)
@@ -118,23 +121,10 @@ func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func UserProfile(s Service) gin.HandlerFunc {
+func UserProfile() gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		// Get the current user id
-		userId, ok := ctx.Get("user_id")
-
-		if !ok {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
-		}
-
-		// Get the user
-		user, err := s.GetById(ctx, userId.(string))
-
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-
-		ctx.JSON(http.StatusOK, gin.H{"user": user})
+		user := GetCurrentUser(ctx)
+		ctx.JSON(http.StatusOK, user)
 	}
 
 	return gin.HandlerFunc(fn)

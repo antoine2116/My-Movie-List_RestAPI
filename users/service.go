@@ -41,10 +41,8 @@ func (s service) Register(ctx context.Context, email string, password string) (s
 	// Check if user exists
 	_, err := s.repo.GetByEmail(ctx, email)
 
-	if err != nil {
-		if err != mongo.ErrNoDocuments {
-			return "", errors.New("user already exists with the same email")
-		}
+	if err == nil {
+		return "", errors.New("user already exists with the same email")
 	}
 
 	// Insert user
@@ -60,7 +58,7 @@ func (s service) Register(ctx context.Context, email string, password string) (s
 	}
 
 	// Generate JWT token
-	token := s.generateJWT(res.InsertedID.(primitive.ObjectID).Hex())
+	token := s.generateJWT(res.InsertedID.(primitive.ObjectID).Hex(), email)
 
 	return token, nil
 }
@@ -80,7 +78,7 @@ func (s service) Login(ctx context.Context, email string, password string) (stri
 	}
 
 	// Generate JWT token
-	token := s.generateJWT(user.ID.Hex())
+	token := s.generateJWT(user.ID.Hex(), email)
 
 	return token, nil
 }
@@ -137,18 +135,18 @@ func (s service) performOAuth(ctx context.Context, email string, provider string
 		user.ID = res.InsertedID.(primitive.ObjectID)
 	}
 
-	token := s.generateJWT(user.ID.Hex())
+	token := s.generateJWT(user.ID.Hex(), email)
 
 	return token, nil
 }
 
-func (s service) generateJWT(userId string) string {
+func (s service) generateJWT(userId string, email string) string {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	token.Claims = jwt.MapClaims{
-		"exp": time.Now().Add(time.Hour * time.Duration(s.tokenDuration)).Unix(),
-		"iat": time.Now().Unix(),
-		"sub": userId,
+		"exp":   time.Now().Add(time.Hour * time.Duration(s.tokenDuration)).Unix(),
+		"id":    userId,
+		"email": email,
 	}
 
 	tokenString, err := token.SignedString([]byte(s.secret))
