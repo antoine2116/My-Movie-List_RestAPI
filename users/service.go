@@ -1,7 +1,7 @@
 package users
 
 import (
-	"apous-films-rest-api/entity"
+	"apous-films-rest-api/models"
 	"apous-films-rest-api/oauth"
 	"apous-films-rest-api/utils"
 	"context"
@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Service interface {
@@ -18,11 +16,7 @@ type Service interface {
 	Login(ctx context.Context, email string, password string) (string, error)
 	GoogleLogin(ctx context.Context, code string) (string, error)
 	GitHubLogin(ctx context.Context, code string) (string, error)
-	GetById(ctx context.Context, id string) (User, error)
-}
-
-type User struct {
-	entity.User
+	GetById(ctx context.Context, id string) (*models.User, error)
 }
 
 type service struct {
@@ -46,8 +40,7 @@ func (s service) Register(ctx context.Context, email string, password string) (s
 	}
 
 	// Insert user
-	res, err := s.repo.Insert(ctx, entity.User{
-		ID:           primitive.NewObjectID(),
+	id, err := s.repo.Insert(ctx, &models.User{
 		Email:        email,
 		PasswordHash: utils.HashPassword(password),
 		Provider:     "local",
@@ -58,7 +51,7 @@ func (s service) Register(ctx context.Context, email string, password string) (s
 	}
 
 	// Generate JWT token
-	token := s.generateJWT(res.InsertedID.(primitive.ObjectID).Hex(), email)
+	token := s.generateJWT(id, email)
 
 	return token, nil
 }
@@ -68,9 +61,7 @@ func (s service) Login(ctx context.Context, email string, password string) (stri
 	user, err := s.repo.GetByEmail(ctx, email)
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return "", errors.New("invalid email or password")
-		}
+		return "", errors.New("invalid email or password")
 	}
 
 	if err := utils.CompareHashAndPassword(user.PasswordHash, password); err != nil {
@@ -78,7 +69,7 @@ func (s service) Login(ctx context.Context, email string, password string) (stri
 	}
 
 	// Generate JWT token
-	token := s.generateJWT(user.ID.Hex(), email)
+	token := s.generateJWT(user.ID, email)
 
 	return token, nil
 }
@@ -105,39 +96,36 @@ func (s service) GitHubLogin(ctx context.Context, code string) (string, error) {
 	return s.performOAuth(ctx, email, "github")
 }
 
-func (s service) GetById(ctx context.Context, id string) (User, error) {
+func (s service) GetById(ctx context.Context, id string) (*models.User, error) {
 	user, err := s.repo.GetById(ctx, id)
 
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 
-	return User{*user}, nil
+	return user, nil
 }
 
 func (s service) performOAuth(ctx context.Context, email string, provider string) (string, error) {
-	// Check if user already exsists
 	user, err := s.repo.GetByEmail(ctx, email)
 
-	if err != nil && err == mongo.ErrNoDocuments {
-		// Create user
-		res, err := s.repo.Insert(ctx, entity.User{
-			ID:           primitive.NewObjectID(),
-			Email:        email,
-			PasswordHash: "",
-			Provider:     provider,
-		})
-
-		if err != nil {
-			return "", err
-		}
-
-		user.ID = res.InsertedID.(primitive.ObjectID)
+	// If user already exsists return the token
+	if err == nil {
+		return s.generateJWT(user.ID, user.Email), nil
 	}
 
-	token := s.generateJWT(user.ID.Hex(), email)
+	// Otherwise create user
+	id, err := s.repo.Insert(ctx, &models.User{
+		Email:        email,
+		PasswordHash: "",
+		Provider:     provider,
+	})
 
-	return token, nil
+	if err != nil {
+		return "", err
+	}
+
+	return s.generateJWT(id, email), nil
 }
 
 func (s service) generateJWT(userId string, email string) string {
