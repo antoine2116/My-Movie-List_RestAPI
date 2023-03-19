@@ -2,7 +2,6 @@ package users
 
 import (
 	"apous-films-rest-api/models"
-	"apous-films-rest-api/oauth"
 	"apous-films-rest-api/utils"
 	"context"
 	"errors"
@@ -23,11 +22,11 @@ type service struct {
 	repo           Repository
 	secret         string
 	tokenDuration  int
-	googleProvider oauth.GoogleProvider
-	gitHubProvider oauth.GitHubProvider
+	googleProvider OAuthProvider
+	gitHubProvider OAuthProvider
 }
 
-func NewService(repo Repository, secret string, tokenDuration int, googleProvider oauth.GoogleProvider, gitHubProvider oauth.GitHubProvider) Service {
+func NewService(repo Repository, secret string, tokenDuration int, googleProvider OAuthProvider, gitHubProvider OAuthProvider) Service {
 	return service{repo, secret, tokenDuration, googleProvider, gitHubProvider}
 }
 

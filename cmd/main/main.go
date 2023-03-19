@@ -3,13 +3,13 @@ package main
 import (
 	"apous-films-rest-api/config"
 	"apous-films-rest-api/database"
-	"apous-films-rest-api/oauth"
 	"apous-films-rest-api/router"
 	"apous-films-rest-api/users"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,27 +18,34 @@ import (
 )
 
 func main() {
-	// Load config
-	cfg := config.Load("../../")
+	// Load configuration
+	cfg, err := config.Load("../../")
+
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(-1)
+	}
 
 	// Connect to the database
 	co := options.Client().ApplyURI(cfg.Database.URI)
 	client, err := mongo.NewClient(co)
 	if err != nil {
 		log.Fatal(err)
+		os.Exit(-1)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*10))
 	defer cancel()
 
-	err = client.Connect(ctx)
-	if err != nil {
+	if err := client.Connect(ctx); err != nil {
 		log.Fatal(err)
+		os.Exit(-1)
 	}
 
 	defer func() {
 		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
+			log.Fatal(err)
+			os.Exit(-1)
 		}
 	}()
 
@@ -46,6 +53,7 @@ func main() {
 
 	db := database.New(client.Database(cfg.Database.Dev))
 
+	// Router
 	r := buildRouting(db, cfg)
 
 	r.Run(fmt.Sprintf(":%v", cfg.Server.Port))
@@ -70,8 +78,8 @@ func buildRouting(db *database.DB, cfg *config.Config) *gin.Engine {
 			users.NewService(users.NewRepository(db),
 				cfg.Server.Secret,
 				cfg.Server.TokenDuration,
-				oauth.NewGoogleProvider(cfg.Google),
-				oauth.NewGitHubProvider(cfg.GitHub)),
+				users.NewGoogleProvider(cfg.Google),
+				users.NewGitHubProvider(cfg.GitHub)),
 			cfg.Client.URI,
 		)
 	}

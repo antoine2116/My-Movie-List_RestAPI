@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/spf13/viper"
 )
@@ -42,13 +42,13 @@ type Config struct {
 	GitHub   GitHubConfig   `mapstructure:"github_oauth"`
 }
 
-func Load(path string) *Config {
+func Load(path string) (*Config, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(path)
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading configuration file : %s", err)
+		return nil, fmt.Errorf("error reading configuration file : %s", err)
 	}
 
 	var c *Config
@@ -56,8 +56,8 @@ func Load(path string) *Config {
 	err := viper.Unmarshal(&c)
 
 	if err != nil {
-		log.Fatalf("Unable to decode configuration file into struct: %v", err)
+		return nil, fmt.Errorf("unable to decode configuration file into struct: %s", err)
 	}
 
-	return c
+	return c, nil
 }
