@@ -21,7 +21,7 @@ type APITestCase struct {
 
 func Endpoint(asserts *assert.Assertions, r *gin.Engine, testCase APITestCase) {
 	req, err := http.NewRequest(testCase.Method, testCase.Path, bytes.NewBufferString(testCase.Body))
-	asserts.NoError(err)
+	asserts.NoError(err, testCase.Message)
 
 	req.Header.Set("Content-Type", "application/json")
 
@@ -31,17 +31,15 @@ func Endpoint(asserts *assert.Assertions, r *gin.Engine, testCase APITestCase) {
 	resp := w.Result()
 
 	// Assert Response Status
-	asserts.Equal(testCase.ExpectedStatus, resp.StatusCode)
+	asserts.Equal(testCase.ExpectedStatus, resp.StatusCode, testCase.Message)
 
 	// Assert Response Body
-	defer resp.Body.Close()
+	if testCase.ExpectedResponse != "" {
+		defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 
-	if err != nil {
-		panic(err)
+		asserts.Nil(err)
+		asserts.Regexp(testCase.ExpectedResponse, string(body), testCase.Message)
 	}
-
-	asserts.Regexp(testCase.ExpectedResponse, string(body))
-
 }

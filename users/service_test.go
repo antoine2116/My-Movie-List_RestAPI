@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var errDB = errors.New("database error")
@@ -20,25 +19,25 @@ func Test_service_Register_and_Login(t *testing.T) {
 	ctx := context.Background()
 
 	// Successful register
-	token, err := s.Register(ctx, "example@mail.com", "pass")
+	token, err := s.Register(ctx, "steve@mail.com", "pass")
 	asserts.Nil(err)
 	asserts.NotEmpty(token)
 
 	// User Already exists
-	_, err = s.Register(ctx, "example@mail.com", "pass")
+	_, err = s.Register(ctx, "steve@mail.com", "pass")
 	asserts.ErrorContains(err, "user already exists with the same email")
 
 	// Successful login
-	token, err = s.Login(ctx, "example@mail.com", "pass")
+	token, err = s.Login(ctx, "steve@mail.com", "pass")
 	asserts.Nil(err)
 	asserts.NotEmpty(token)
 
 	// Failed login (unknown email)
-	_, err = s.Login(ctx, "nobody@mail.com", "pass")
+	_, err = s.Login(ctx, "notsteve@mail.com", "pass")
 	asserts.ErrorContains(err, "invalid email or password")
 
 	// Failed login (wrong password)
-	_, err = s.Login(ctx, "example@mail.com", "wrong")
+	_, err = s.Login(ctx, "steve@mail.com", "wrong")
 	asserts.ErrorContains(err, "invalid email or password")
 }
 
@@ -74,6 +73,24 @@ func Test_service_GitHub_Login(t *testing.T) {
 	asserts.ErrorContains(err, "an error occured during GitHub authentication")
 }
 
+func Test_service_GetById(t *testing.T) {
+	assert := assert.New(t)
+
+	repo := &mockRepository{items: []*models.User{
+		{ID: "test1", Email: "steve@gmail.com", PasswordHash: "hashed_password", Provider: "some_provider"},
+	}}
+
+	s := NewService(repo, "secret", 1000, mockProvider{}, mockProvider{})
+	ctx := context.Background()
+
+	user, err := s.GetById(ctx, "test1")
+	assert.Nil(err)
+	assert.Equal("steve@gmail.com", user.Email)
+
+	_, err = s.GetById(ctx, "unknown_id")
+	assert.NotNil(err)
+}
+
 func Test_service_performOAuth(t *testing.T) {
 	asserts := assert.New(t)
 
@@ -81,7 +98,7 @@ func Test_service_performOAuth(t *testing.T) {
 	ctx := context.Background()
 
 	// Successful OAuth authentication
-	token, err := s.performOAuth(ctx, "example@mail.com", "some_provider")
+	token, err := s.performOAuth(ctx, "steve@mail.com", "some_provider")
 	asserts.Nil(err)
 	asserts.NotEmpty(token)
 
@@ -95,7 +112,7 @@ func Test_service_generateJWT(t *testing.T) {
 
 	s := service{&mockRepository{}, "secret", 1000, mockProvider{}, mockProvider{}}
 
-	token := s.generateJWT("some_id", "example@mail.com")
+	token := s.generateJWT("some_id", "steve@mail.com")
 	asserts.NotEmpty(token)
 }
 
@@ -111,7 +128,7 @@ func (r mockRepository) GetById(ctx context.Context, id string) (*models.User, e
 		}
 	}
 
-	return nil, mongo.ErrNoDocuments
+	return nil, errors.New("")
 }
 
 func (r mockRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
@@ -121,7 +138,7 @@ func (r mockRepository) GetByEmail(ctx context.Context, email string) (*models.U
 		}
 	}
 
-	return nil, mongo.ErrNoDocuments
+	return nil, errors.New("")
 }
 
 func (r *mockRepository) Insert(ctx context.Context, user *models.User) (string, error) {
@@ -146,5 +163,5 @@ func (p mockProvider) GetUserEmail(ctx context.Context, code string) (string, er
 		return "", errors.New("")
 	}
 
-	return "example@mail.com", nil
+	return "steve@mail.com", nil
 }

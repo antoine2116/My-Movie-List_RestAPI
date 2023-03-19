@@ -52,11 +52,11 @@ func UserLogin(s Service) gin.HandlerFunc {
 			return
 		}
 
-		// Register
+		// Authenticate
 		token, err := s.Login(ctx, v.UserLogin.Email, v.UserLogin.Password)
 
 		if err != nil {
-			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -80,7 +80,7 @@ func GoogleLogin(s Service, clientURI string) gin.HandlerFunc {
 		token, err := s.GoogleLogin(ctx, code)
 
 		if err != nil {
-			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -107,7 +107,7 @@ func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
 		token, err := s.GitHubLogin(ctx, code)
 
 		if err != nil {
-			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
