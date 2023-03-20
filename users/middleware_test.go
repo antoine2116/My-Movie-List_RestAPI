@@ -73,7 +73,14 @@ func Test_JwtAthentication(t *testing.T) {
 		{
 			Path:           "/protected",
 			Method:         "GET",
-			Header:         http.Header{"Authorization": {"invalid_token"}},
+			Header:         http.Header{"Authorization": {"invalid_format"}},
+			ExpectedStatus: 401,
+			Message:        "Invalid format should return StatusUnauthorized (401)",
+		},
+		{
+			Path:           "/protected",
+			Method:         "GET",
+			Header:         http.Header{"Authorization": {"Bearer invalid_token"}},
 			ExpectedStatus: 401,
 			Message:        "Invalid token should return StatusUnauthorized (401)",
 		},

@@ -54,6 +54,14 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 		{
 			Path:             "/login",
 			Method:           "POST",
+			Body:             `{"user": {"email": "steve@gmail.com"}}`,
+			ExpectedStatus:   400,
+			ExpectedResponse: `{"error":"Password is required \\n"}`,
+			Message:          "Invalid data (missing password) should return StatusBadRequest (400)",
+		},
+		{
+			Path:             "/login",
+			Method:           "POST",
 			Body:             `{"user": {"email": "notsteve@gmail.com", "password": "pass"}}`,
 			ExpectedStatus:   401,
 			ExpectedResponse: `{"error":"invalid email or password"}`,

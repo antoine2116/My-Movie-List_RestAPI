@@ -139,7 +139,7 @@ func (s service) generateJWT(userId string, email string) string {
 	tokenString, err := token.SignedString([]byte(s.secret))
 
 	if err != nil {
-		panic(err)
+		return ""
 	}
 
 	return tokenString

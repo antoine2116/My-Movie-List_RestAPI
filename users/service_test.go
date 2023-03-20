@@ -47,8 +47,13 @@ func Test_service_Google_Login(t *testing.T) {
 	s := NewService(&mockRepository{}, "secret", 1000, mockProvider{}, mockProvider{})
 	ctx := context.Background()
 
-	// Successful authentication
+	// Successful authentication (to test register)
 	token, err := s.GoogleLogin(ctx, "valid_code")
+	asserts.Nil(err)
+	asserts.NotEmpty(token)
+
+	// 2nd Successful authentication (to test login)
+	token, err = s.GoogleLogin(ctx, "valid_code")
 	asserts.Nil(err)
 	asserts.NotEmpty(token)
 
@@ -63,8 +68,13 @@ func Test_service_GitHub_Login(t *testing.T) {
 	s := NewService(&mockRepository{}, "secret", 1000, mockProvider{}, mockProvider{})
 	ctx := context.Background()
 
-	// Successful authentication
+	// Successful authentication (to test register)
 	token, err := s.GitHubLogin(ctx, "valid_code")
+	asserts.Nil(err)
+	asserts.NotEmpty(token)
+
+	// 2nd Successful authentication (to test login)
+	token, err = s.GitHubLogin(ctx, "valid_code")
 	asserts.Nil(err)
 	asserts.NotEmpty(token)
 
