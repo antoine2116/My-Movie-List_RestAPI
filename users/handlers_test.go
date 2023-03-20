@@ -2,6 +2,7 @@ package users
 
 import (
 	"apous-films-rest-api/test"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -149,4 +150,37 @@ func Test_handlers_GitHubLogin(t *testing.T) {
 	for _, testCase := range testCases {
 		test.Endpoint(asserts, r, testCase)
 	}
+}
+
+func Test_handlers_Profile(t *testing.T) {
+	asserts := assert.New(t)
+
+	r := test.MockRouter()
+	grp := r.Group("")
+	grp.Use(MockJWTAuthentication("secret"))
+
+	RegisterAuthenticatedHandlers(grp)
+
+	testCases := []test.APITestCase{
+		{
+			Path:             "/profile",
+			Method:           "GET",
+			Header:           http.Header{"Authorization": {"TEST"}},
+			ExpectedStatus:   200,
+			Message:          "Valid token should return StatusOK (200) and the current user",
+			ExpectedResponse: `{"id":"test1","email":"steve@gmail.com"}`,
+		},
+		{
+			Path:           "/profile",
+			Method:         "GET",
+			Header:         http.Header{"Authorization": {"WRONG TOKEN"}},
+			ExpectedStatus: 401,
+			Message:        "Invalid token return StatusUnauthorized (401)",
+		},
+	}
+
+	for _, testCase := range testCases {
+		test.Endpoint(asserts, r, testCase)
+	}
+
 }

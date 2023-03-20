@@ -14,6 +14,7 @@ type APITestCase struct {
 	Path             string
 	Method           string
 	Body             string
+	Header           http.Header
 	ExpectedStatus   int
 	ExpectedResponse string
 	Message          string
@@ -22,6 +23,10 @@ type APITestCase struct {
 func Endpoint(asserts *assert.Assertions, r *gin.Engine, testCase APITestCase) {
 	req, err := http.NewRequest(testCase.Method, testCase.Path, bytes.NewBufferString(testCase.Body))
 	asserts.NoError(err, testCase.Message)
+
+	if testCase.Header != nil {
+		req.Header = testCase.Header
+	}
 
 	req.Header.Set("Content-Type", "application/json")
 
