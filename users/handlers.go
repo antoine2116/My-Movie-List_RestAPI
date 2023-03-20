@@ -23,7 +23,7 @@ func UserRegister(s Service) gin.HandlerFunc {
 		// Bind and validate
 		v := RegisterValidator{}
 
-		if err := v.BindAndValidate(ctx); err != nil {
+		if err := v.Bind(ctx); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -47,7 +47,7 @@ func UserLogin(s Service) gin.HandlerFunc {
 		// Bind
 		v := LoginValidator{}
 
-		if err := v.BindAndValidate(ctx); err != nil {
+		if err := v.Bind(ctx); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

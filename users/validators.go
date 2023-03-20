@@ -16,7 +16,7 @@ type RegisterValidator struct {
 	} `json:"user"`
 }
 
-func (v *RegisterValidator) BindAndValidate(c *gin.Context) error {
+func (v *RegisterValidator) Bind(c *gin.Context) error {
 	// Bind
 	if err := c.ShouldBindJSON(v); err != nil {
 		return utils.NewValidationError(err)
@@ -37,20 +37,15 @@ type LoginValidator struct {
 		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	} `json:"user"`
-
-	userModel User `json:"-"`
 }
 
-func (v *LoginValidator) BindAndValidate(c *gin.Context) error {
+func (v *LoginValidator) Bind(c *gin.Context) error {
 	// Bind
-	if err := c.ShouldBind(v); err != nil {
+	if err := c.ShouldBindJSON(v); err != nil {
 		return utils.NewValidationError(err)
 	}
 
 	// No validations yet
-
-	// Map
-	v.userModel.Email = v.UserLogin.Email
 
 	return nil
 }
