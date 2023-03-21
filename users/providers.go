@@ -1,7 +1,6 @@
 package users
 
 import (
-	"apous-films-rest-api/config"
 	"context"
 	"encoding/json"
 
@@ -9,49 +8,46 @@ import (
 )
 
 type OAuthProvider interface {
-	GetUserEmail(ctx context.Context, code string) (string, error)
+	GetUserEmail(ctx context.Context, token *oauth2.Token) (string, error)
+	Exchange(ctx context.Context, code string) (*oauth2.Token, error)
 }
 
-type GoogleUser struct {
-	ID         string `json:"id"`
-	Email      string `json:"email"`
-	Verified   bool   `json:"verified_email"`
-	Name       string `json:"name"`
-	GivenName  string `json:"given_name"`
-	FamilyName string `json:"family_name"`
-	Picture    string `json:"picture"`
+type googleUser struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
 }
 
 type googleProvider struct {
-	config *oauth2.Config
+	config     *oauth2.Config
+	profileUrl string
 }
 
-func NewGoogleProvider(cfg config.GoogleConfig) googleProvider {
+func NewGoogleProvider(clientID, clientSecret, redirectURL string) googleProvider {
 	return googleProvider{
-		&oauth2.Config{
-			ClientID:     cfg.ClientID,
-			ClientSecret: cfg.ClientSecret,
-			RedirectURL:  cfg.RedirectURL,
+		config: &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			RedirectURL:  redirectURL,
 			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://accounts.google.com/o/oauth2/auth",
 				TokenURL: "https://oauth2.googleapis.com/token",
 			},
 		},
+		profileUrl: "https://www.googleapis.com/oauth2/v2/userinfo",
 	}
 }
 
-func (p googleProvider) GetUserEmail(ctx context.Context, code string) (string, error) {
+func (p googleProvider) Exchange(ctx context.Context, code string) (*oauth2.Token, error) {
 	// Exchange will do the handshake to retrieve the initial access token.
-	token, err := p.config.Exchange(ctx, code, oauth2.AccessTypeOffline)
+	return p.config.Exchange(ctx, code, oauth2.AccessTypeOffline)
+}
 
-	if err != nil {
-		return "", err
-	}
-	user := GoogleUser{}
+func (p googleProvider) GetUserEmail(ctx context.Context, token *oauth2.Token) (string, error) {
+	user := googleUser{}
 
 	client := p.config.Client(ctx, token)
-	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	resp, err := client.Get(p.profileUrl)
 
 	if err != nil {
 		return "", err
@@ -69,42 +65,40 @@ func (p googleProvider) GetUserEmail(ctx context.Context, code string) (string, 
 }
 
 type gitHubEmail struct {
-	Email      string `json:"email"`
-	Primary    bool   `json:"primary"`
-	Verified   bool   `json:"verified"`
-	Visibility string `json:"visibility"`
+	Email   string `json:"email"`
+	Primary bool   `json:"primary"`
 }
 
 type gitHubProvider struct {
-	config *oauth2.Config
+	config    *oauth2.Config
+	emailsUrl string
 }
 
-func NewGitHubProvider(cfg config.GitHubConfig) gitHubProvider {
+func NewGitHubProvider(clientID, clientSecret, redirectURL string) gitHubProvider {
 	return gitHubProvider{
-		&oauth2.Config{
-			ClientID:     cfg.ClientID,
-			ClientSecret: cfg.ClientSecret,
-			RedirectURL:  cfg.RedirectURL,
+		config: &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			RedirectURL:  redirectURL,
 			Scopes:       []string{"read:user", "user:email"},
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://github.com/login/oauth/authorize",
 				TokenURL: "https://github.com/login/oauth/access_token",
 			},
 		},
+		emailsUrl: "https://api.github.com/user/emails",
 	}
 }
 
-func (p gitHubProvider) GetUserEmail(ctx context.Context, code string) (string, error) {
+func (p gitHubProvider) Exchange(ctx context.Context, code string) (*oauth2.Token, error) {
 	// Exchange will do the handshake to retrieve the initial access token.
-	token, err := p.config.Exchange(ctx, code)
+	return p.config.Exchange(ctx, code, oauth2.AccessTypeOffline)
+}
 
-	if err != nil {
-		return "", err
-	}
-
+func (p gitHubProvider) GetUserEmail(ctx context.Context, token *oauth2.Token) (string, error) {
 	// Make a request to the GitHub API with to get the user's emails
 	client := p.config.Client(ctx, token)
-	resp, err := client.Get("https://api.github.com/user/emails")
+	resp, err := client.Get(p.emailsUrl)
 
 	if err != nil {
 		return "", err

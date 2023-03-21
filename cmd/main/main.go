@@ -78,8 +78,8 @@ func buildRouting(db *database.DB, cfg *config.Config) *gin.Engine {
 			users.NewService(users.NewRepository(db),
 				cfg.Server.Secret,
 				cfg.Server.TokenDuration,
-				users.NewGoogleProvider(cfg.Google),
-				users.NewGitHubProvider(cfg.GitHub)),
+				users.NewGoogleProvider(cfg.Google.ClientID, cfg.Google.ClientSecret, cfg.Google.RedirectURL),
+				users.NewGitHubProvider(cfg.GitHub.ClientID, cfg.GitHub.ClientSecret, cfg.GitHub.RedirectURL)),
 			cfg.Client.URI,
 		)
 	}
