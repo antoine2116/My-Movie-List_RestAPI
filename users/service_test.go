@@ -5,9 +5,11 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/oauth2"
 )
 
 var errDB = errors.New("database error")
@@ -168,8 +170,21 @@ func (r mockRepository) Count(ctx context.Context) (int, error) {
 type mockProvider struct {
 }
 
-func (p mockProvider) GetUserEmail(ctx context.Context, code string) (string, error) {
+func (p mockProvider) Exchange(ctx context.Context, code string) (*oauth2.Token, error) {
 	if code == "invalid_code" {
+		return &oauth2.Token{}, errors.New("")
+	}
+
+	token := &oauth2.Token{
+		AccessToken: "AccessToken",
+		Expiry:      time.Now().Add(1 * time.Minute),
+	}
+
+	return token, nil
+}
+
+func (p mockProvider) GetUserEmail(ctx context.Context, token *oauth2.Token) (string, error) {
+	if token.AccessToken == "invalid_token" {
 		return "", errors.New("")
 	}
 

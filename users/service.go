@@ -74,8 +74,14 @@ func (s service) Login(ctx context.Context, email string, password string) (stri
 }
 
 func (s service) GoogleLogin(ctx context.Context, code string) (string, error) {
-	// Get google user email
-	email, err := s.googleProvider.GetUserEmail(ctx, code)
+	// Get google user token
+	token, err := s.googleProvider.Exchange(ctx, code)
+
+	if err != nil {
+		return "", errors.New("an error occured during Google authentication")
+	}
+
+	email, err := s.googleProvider.GetUserEmail(ctx, token)
 
 	if err != nil {
 		return "", errors.New("an error occured during Google authentication")
@@ -85,8 +91,14 @@ func (s service) GoogleLogin(ctx context.Context, code string) (string, error) {
 }
 
 func (s service) GitHubLogin(ctx context.Context, code string) (string, error) {
-	// Get google user email
-	email, err := s.gitHubProvider.GetUserEmail(ctx, code)
+	// Get github user token
+	token, err := s.gitHubProvider.Exchange(ctx, code)
+
+	if err != nil {
+		return "", errors.New("an error occured during GitHub authentication")
+	}
+
+	email, err := s.gitHubProvider.GetUserEmail(ctx, token)
 
 	if err != nil {
 		return "", errors.New("an error occured during GitHub authentication")
