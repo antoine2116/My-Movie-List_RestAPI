@@ -21,4 +21,4 @@ go.work
 .vscode/
 
 # Config file
-config.yaml
+config/local.yml

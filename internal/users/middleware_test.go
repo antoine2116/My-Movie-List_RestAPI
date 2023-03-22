@@ -1,7 +1,7 @@
 package users
 
 import (
-	"apous-films-rest-api/test"
+	"apous-films-rest-api/internal/test"
 	"fmt"
 	"net/http"
 	"net/http/httptest"

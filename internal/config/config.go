@@ -43,8 +43,8 @@ type Config struct {
 }
 
 func Load(path string) (*Config, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	viper.SetConfigName("local")
+	viper.SetConfigType("yml")
 	viper.AddConfigPath(path)
 
 	if err := viper.ReadInConfig(); err != nil {

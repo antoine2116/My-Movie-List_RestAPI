@@ -6,7 +6,6 @@ server:
 client:
   uri: "http://localhost:3000"
 
-
 database:
   uri: "mongodb://localhost:27017/"
   dev: "apous-films"

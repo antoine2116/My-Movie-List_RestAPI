@@ -1,10 +1,10 @@
 package main
 
 import (
-	"apous-films-rest-api/config"
-	"apous-films-rest-api/database"
-	"apous-films-rest-api/router"
-	"apous-films-rest-api/users"
+	"apous-films-rest-api/internal/config"
+	"apous-films-rest-api/internal/router"
+	"apous-films-rest-api/internal/users"
+	"apous-films-rest-api/pkg/database"
 	"context"
 	"fmt"
 	"log"
@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// Load configuration
-	cfg, err := config.Load("../../")
+	cfg, err := config.Load("../../config")
 
 	if err != nil {
 		log.Fatal(err)

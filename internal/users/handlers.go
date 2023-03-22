@@ -1,10 +1,13 @@
 package users
 
 import (
-	"apous-films-rest-api/cookies"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	cookie_maxAge = 60 * 60 * 24
 )
 
 func RegisterHandlers(c *gin.RouterGroup, s Service, clientURI string) {
@@ -85,7 +88,7 @@ func GoogleLogin(s Service, clientURI string) gin.HandlerFunc {
 		}
 
 		// Set cookie
-		cookies.SetToken(ctx, token)
+		ctx.SetCookie("token", token, cookie_maxAge, "/", "", true, false)
 
 		// Redirect to client
 		ctx.Redirect(http.StatusPermanentRedirect, clientURI)
@@ -112,7 +115,7 @@ func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
 		}
 
 		// Set cookie
-		cookies.SetToken(ctx, token)
+		ctx.SetCookie("token", token, cookie_maxAge, "/", "", true, false)
 
 		// Redirect to client
 		ctx.Redirect(http.StatusPermanentRedirect, clientURI)

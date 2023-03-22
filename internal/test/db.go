@@ -1,8 +1,8 @@
 package test
 
 import (
-	"apous-films-rest-api/config"
-	"apous-films-rest-api/database"
+	"apous-films-rest-api/internal/config"
+	"apous-films-rest-api/pkg/database"
 	"context"
 	"testing"
 	"time"
@@ -18,7 +18,7 @@ func DB(t *testing.T) *database.DB {
 		return db
 	}
 
-	cfg, err := config.Load("../")
+	cfg, err := config.Load("../config")
 
 	if err != nil {
 		t.Error(err)

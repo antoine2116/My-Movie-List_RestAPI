@@ -1,8 +1,8 @@
 package users
 
 import (
-	"apous-films-rest-api/models"
-	"apous-films-rest-api/test"
+	"apous-films-rest-api/internal/models"
+	"apous-films-rest-api/internal/test"
 	"context"
 	"testing"
 

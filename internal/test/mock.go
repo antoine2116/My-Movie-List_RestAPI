@@ -1,7 +1,7 @@
 package test
 
 import (
-	"apous-films-rest-api/router"
+	"apous-films-rest-api/internal/router"
 	"net/http"
 	"net/http/httptest"
 
