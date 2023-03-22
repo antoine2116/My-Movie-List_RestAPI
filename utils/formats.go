@@ -25,9 +25,9 @@ func getErrorMsg(fe validator.FieldError) string {
 	case "required":
 		return "is required"
 	case "lte":
-		return "should be less than " + fe.Param()
+		return fmt.Sprintf("should be less than or equal to %s", fe.Param())
 	case "gte":
-		return "should be greater than " + fe.Param()
+		return fmt.Sprintf("should be greater than or equal to %s", fe.Param())
 	}
 
 	return "Unknown error"
