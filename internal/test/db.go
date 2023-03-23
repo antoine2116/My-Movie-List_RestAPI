@@ -1,9 +1,9 @@
 package test
 
 import (
-	"apous-films-rest-api/internal/config"
 	"apous-films-rest-api/pkg/database"
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -18,14 +18,13 @@ func DB(t *testing.T) *database.DB {
 		return db
 	}
 
-	cfg, err := config.Load("../config")
+	dbURI := os.Getenv("DB_URI")
 
-	if err != nil {
-		t.Error(err)
+	if dbURI == "" {
 		t.FailNow()
 	}
 
-	co := options.Client().ApplyURI(cfg.Database.URI)
+	co := options.Client().ApplyURI(dbURI)
 	client, err := mongo.NewClient(co)
 	if err != nil {
 		t.Error(err)
@@ -40,7 +39,7 @@ func DB(t *testing.T) *database.DB {
 		t.FailNow()
 	}
 
-	db = database.New(client.Database(cfg.Database.Test))
+	db = database.New(client.Database("test_db"))
 
 	return db
 }
