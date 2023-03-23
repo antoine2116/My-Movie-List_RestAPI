@@ -8,8 +8,7 @@ client:
 
 database:
   uri: "mongodb://localhost:27017/"
-  dev: "apous-films"
-  test: "apous-films-test"
+  db: "apous-films"
 
 google_oauth:
   client_id: 

@@ -51,7 +51,7 @@ func main() {
 
 	log.Printf("Database connection established")
 
-	db := database.New(client.Database(cfg.Database.Dev))
+	db := database.New(client.Database(cfg.Database.Db))
 
 	// Router
 	r := buildRouting(db, cfg)

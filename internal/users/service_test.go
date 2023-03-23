@@ -27,7 +27,7 @@ func Test_service_Register_and_Login(t *testing.T) {
 
 	// User Already exists
 	_, err = s.Register(ctx, "steve@mail.com", "pass")
-	asserts.ErrorContains(err, "user already exists with the same email")
+	asserts.Equal(ErrUserAlreadyExists, err)
 
 	// Successful login
 	token, err = s.Login(ctx, "steve@mail.com", "pass")
@@ -36,11 +36,11 @@ func Test_service_Register_and_Login(t *testing.T) {
 
 	// Failed login (unknown email)
 	_, err = s.Login(ctx, "notsteve@mail.com", "pass")
-	asserts.ErrorContains(err, "invalid email or password")
+	asserts.Equal(ErrBadCredentials, err)
 
 	// Failed login (wrong password)
 	_, err = s.Login(ctx, "steve@mail.com", "wrong")
-	asserts.ErrorContains(err, "invalid email or password")
+	asserts.Equal(ErrBadCredentials, err)
 }
 
 func Test_service_Google_Login(t *testing.T) {
@@ -61,7 +61,7 @@ func Test_service_Google_Login(t *testing.T) {
 
 	// Failed authentication
 	_, err = s.GoogleLogin(ctx, "invalid_code")
-	asserts.ErrorContains(err, "an error occured during Google authentication")
+	asserts.Equal(ErrGoogleAuthFailed, err)
 }
 
 func Test_service_GitHub_Login(t *testing.T) {
@@ -82,7 +82,7 @@ func Test_service_GitHub_Login(t *testing.T) {
 
 	// Failed authentication
 	_, err = s.GitHubLogin(ctx, "invalid_code")
-	asserts.ErrorContains(err, "an error occured during GitHub authentication")
+	asserts.Equal(ErrGitHubAuthFailed, err)
 }
 
 func Test_service_GetById(t *testing.T) {

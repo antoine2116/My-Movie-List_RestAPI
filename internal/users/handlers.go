@@ -75,7 +75,7 @@ func GoogleLogin(s Service, clientURI string) gin.HandlerFunc {
 		code := ctx.Query("code")
 
 		if code == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidToken.Error()})
 			return
 		}
 
@@ -102,7 +102,7 @@ func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
 		code := ctx.Query("code")
 
 		if code == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidToken.Error()})
 			return
 		}
 

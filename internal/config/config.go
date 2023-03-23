@@ -18,8 +18,7 @@ type ClientConfig struct {
 
 type DatabaseConfig struct {
 	URI  string `mapstructure:"uri"`
-	Dev  string `mapstructure:"dev"`
-	Test string `mapstructure:"test"`
+	Db string `mapstructure:"db"`
 }
 
 type GoogleConfig struct {

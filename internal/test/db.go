@@ -1,6 +1,7 @@
 package test
 
 import (
+	"apous-films-rest-api/internal/config"
 	"apous-films-rest-api/pkg/database"
 	"context"
 	"os"
@@ -18,7 +19,15 @@ func DB(t *testing.T) *database.DB {
 		return db
 	}
 
+	// Default value come from env variable
 	dbURI := os.Getenv("DB_URI")
+
+	cfg, err := config.Load("../../config")
+
+	// If config file exists, override default value
+	if err == nil {
+		dbURI = cfg.Database.URI
+	}
 
 	if dbURI == "" {
 		t.FailNow()

@@ -38,7 +38,7 @@ func JwtAuthentication(secret string) gin.HandlerFunc {
 		stringToken := extractToken(ctx)
 
 		if stringToken == "" {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized : Missing token or invalid format"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidToken.Error()})
 			return
 		}
 
@@ -52,7 +52,7 @@ func JwtAuthentication(secret string) gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized : Invalid token"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidToken.Error()})
 			return
 		}
 
@@ -71,7 +71,7 @@ func JwtAuthentication(secret string) gin.HandlerFunc {
 func MockJWTAuthentication(secret string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if ctx.Request.Header.Get("Authorization") != "TEST" {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized : Invalid token"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidToken.Error()})
 		}
 
 		ctx.Set(userKey, CurrentUser{

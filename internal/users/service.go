@@ -4,7 +4,6 @@ import (
 	"apous-films-rest-api/internal/models"
 	"apous-films-rest-api/internal/utils"
 	"context"
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -35,7 +34,7 @@ func (s service) Register(ctx context.Context, email string, password string) (s
 	_, err := s.repo.GetByEmail(ctx, email)
 
 	if err == nil {
-		return "", errors.New("user already exists with the same email")
+		return "", ErrUserAlreadyExists
 	}
 
 	// Insert user
@@ -60,11 +59,11 @@ func (s service) Login(ctx context.Context, email string, password string) (stri
 	user, err := s.repo.GetByEmail(ctx, email)
 
 	if err != nil {
-		return "", errors.New("invalid email or password")
+		return "", ErrBadCredentials
 	}
 
 	if err := utils.CompareHashAndPassword(user.PasswordHash, password); err != nil {
-		return "", errors.New("invalid email or password")
+		return "", ErrBadCredentials
 	}
 
 	// Generate JWT token
@@ -78,13 +77,13 @@ func (s service) GoogleLogin(ctx context.Context, code string) (string, error) {
 	token, err := s.googleProvider.Exchange(ctx, code)
 
 	if err != nil {
-		return "", errors.New("an error occured during Google authentication")
+		return "", ErrGoogleAuthFailed
 	}
 
 	email, err := s.googleProvider.GetUserEmail(ctx, token)
 
 	if err != nil {
-		return "", errors.New("an error occured during Google authentication")
+		return "", ErrGoogleAuthFailed
 	}
 
 	return s.performOAuth(ctx, email, "google")
@@ -95,13 +94,13 @@ func (s service) GitHubLogin(ctx context.Context, code string) (string, error) {
 	token, err := s.gitHubProvider.Exchange(ctx, code)
 
 	if err != nil {
-		return "", errors.New("an error occured during GitHub authentication")
+		return "", ErrGitHubAuthFailed
 	}
 
 	email, err := s.gitHubProvider.GetUserEmail(ctx, token)
 
 	if err != nil {
-		return "", errors.New("an error occured during GitHub authentication")
+		return "", ErrGitHubAuthFailed
 	}
 
 	return s.performOAuth(ctx, email, "github")

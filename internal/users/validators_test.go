@@ -23,7 +23,7 @@ var registerTests = []struct {
 	},
 	{
 		`{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "wrongpass"}}`,
-		"passwords do not match",
+		ErrMismatchedPasswords.Error(),
 	},
 }
 

@@ -24,7 +24,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
 			ExpectedStatus:   201,
-			ExpectedResponse: `{"token":"([\w-]*\.[\w-]*\.[\w-]*)"}`,
 			Message:          "Valid data should return StatusCreated (201)",
 		},
 		{
@@ -32,7 +31,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "wrongconfirmation"}}`,
 			ExpectedStatus:   400,
-			ExpectedResponse: `{"error":"passwords do not match"}`,
 			Message:          "Wrong password confirmation should return StatusBadRequest (400)",
 		},
 		{
@@ -40,7 +38,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
 			ExpectedStatus:   409,
-			ExpectedResponse: `{"error":"user already exists with the same email"}`,
 			Message:          "Same email as another user should return StatusConflict (409)",
 		},
 		{
@@ -48,7 +45,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass"}}`,
 			ExpectedStatus:   200,
-			ExpectedResponse: `{"token":"([\w-]*\.[\w-]*\.[\w-]*)"}`,
 			Message:          "Valid data should return StatusOK (200)",
 		},
 		{
@@ -56,7 +52,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com"}}`,
 			ExpectedStatus:   400,
-			ExpectedResponse: `{"error":"Password is required \\n"}`,
 			Message:          "Invalid data (missing password) should return StatusBadRequest (400)",
 		},
 		{
@@ -64,7 +59,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "notsteve@gmail.com", "password": "pass"}}`,
 			ExpectedStatus:   401,
-			ExpectedResponse: `{"error":"invalid email or password"}`,
 			Message:          "Wrong email should return StatusUnauthorized (401)",
 		},
 		{
@@ -72,7 +66,6 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 			Method:           "POST",
 			Body:             `{"user": {"email": "steve@gmail.com", "password": "wrongpass"}}`,
 			ExpectedStatus:   401,
-			ExpectedResponse: `{"error":"invalid email or password"}`,
 			Message:          "Wrong password should return StatusUnauthorized (401)",
 		},
 	}

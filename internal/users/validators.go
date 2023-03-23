@@ -2,7 +2,6 @@ package users
 
 import (
 	"apous-films-rest-api/internal/utils"
-	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func (v *RegisterValidator) Bind(c *gin.Context) error {
 	// Validate
 	// Check password confirmation
 	if v.UserRegister.Password != v.UserRegister.PasswordConfirmation {
-		return errors.New("passwords do not match")
+		return ErrMismatchedPasswords
 	}
 
 	return nil
