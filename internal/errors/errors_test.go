@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_formats_getErrorMsg(t *testing.T) {
+func Test_errors_getErrorMsg(t *testing.T) {
 	asserts := assert.New(t)
 
 	// Required
@@ -28,7 +28,7 @@ func Test_formats_getErrorMsg(t *testing.T) {
 	asserts.Equal("unknown error", msg)
 }
 
-func Test_formats_NewValidationError(t *testing.T) {
+func Test_errors_NewValidationError(t *testing.T) {
 	asserts := assert.New(t)
 
 	err := NewValidationError(errors.New("some error message"))
@@ -54,6 +54,14 @@ func Test_formats_NewValidationError(t *testing.T) {
 	asserts.NotNil(err)
 	asserts.Equal("name", err.Errors[0].Field)
 	asserts.Equal("name unknown error", err.Errors[0].Error)
+}
+
+func Test_errors_NewCommonError(t *testing.T) {
+	asserts := assert.New(t)
+	
+	err := NewCommonError(errors.New("error message"))
+	asserts.Equal("error message", err.Message)
+	asserts.Len(err.Errors, 0)
 }
 
 type mockFieldError struct {
