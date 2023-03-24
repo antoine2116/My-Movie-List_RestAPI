@@ -1,8 +1,6 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/utils"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +16,7 @@ type RegisterValidator struct {
 func (v *RegisterValidator) Bind(c *gin.Context) error {
 	// Bind
 	if err := c.ShouldBindJSON(v); err != nil {
-		return utils.NewValidationError(err)
+		return err
 	}
 
 	// Validate
@@ -41,7 +39,7 @@ type LoginValidator struct {
 func (v *LoginValidator) Bind(c *gin.Context) error {
 	// Bind
 	if err := c.ShouldBindJSON(v); err != nil {
-		return utils.NewValidationError(err)
+		return err
 	}
 
 	// No validations yet

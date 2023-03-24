@@ -1,6 +1,7 @@
-package utils
+package errors
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -24,26 +25,35 @@ func Test_formats_getErrorMsg(t *testing.T) {
 
 	// Unknown
 	msg = getErrorMsg(mockFieldError{tag: "unknown"})
-	asserts.Equal("Unknown error", msg)
+	asserts.Equal("unknown error", msg)
 }
 
 func Test_formats_NewValidationError(t *testing.T) {
 	asserts := assert.New(t)
 
-	err := NewValidationError(validator.ValidationErrors{
+	err := NewValidationError(errors.New("some error message"))
+	asserts.NotNil(err)
+	asserts.Equal("some error message", err.Message)
+	asserts.Equal(0, len(err.Errors))
+
+	err = NewValidationError(validator.ValidationErrors{
 		mockFieldError{field: "name", tag: "required"},
 		mockFieldError{field: "age", tag: "lte", param: "200"},
 	})
 
 	asserts.NotNil(err)
-	asserts.ErrorContains(err, "name is required \nage should be less than or equal to 200 \n")
+	asserts.Equal("name", err.Errors[0].Field)
+	asserts.Equal("name is required", err.Errors[0].Error)
+	asserts.Equal("age", err.Errors[1].Field)
+	asserts.Equal("age should be less than or equal to 200", err.Errors[1].Error)
 
 	err = NewValidationError(validator.ValidationErrors{
 		mockFieldError{field: "name", tag: "unknown"},
 	})
 
 	asserts.NotNil(err)
-	asserts.ErrorContains(err, "name Unknown error \n")
+	asserts.Equal("name", err.Errors[0].Field)
+	asserts.Equal("name unknown error", err.Errors[0].Error)
 }
 
 type mockFieldError struct {

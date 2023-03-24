@@ -1,6 +1,7 @@
 package users
 
 import (
+	"apous-films-rest-api/internal/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func UserRegister(s Service) gin.HandlerFunc {
 		v := RegisterValidator{}
 
 		if err := v.Bind(ctx); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": errors.NewValidationError(err)})
 			return
 		}
 
@@ -51,7 +52,7 @@ func UserLogin(s Service) gin.HandlerFunc {
 		v := LoginValidator{}
 
 		if err := v.Bind(ctx); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": errors.NewValidationError(err)})
 			return
 		}
 
@@ -59,7 +60,7 @@ func UserLogin(s Service) gin.HandlerFunc {
 		token, err := s.Login(ctx, v.UserLogin.Email, v.UserLogin.Password)
 
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": errors.NewCommonError(err)})
 			return
 		}
 
@@ -75,7 +76,7 @@ func GoogleLogin(s Service, clientURI string) gin.HandlerFunc {
 		code := ctx.Query("code")
 
 		if code == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidToken.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": errors.NewCommonError(ErrInvalidToken)})
 			return
 		}
 
@@ -83,7 +84,7 @@ func GoogleLogin(s Service, clientURI string) gin.HandlerFunc {
 		token, err := s.GoogleLogin(ctx, code)
 
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": errors.NewCommonError(err)})
 			return
 		}
 
@@ -102,7 +103,7 @@ func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
 		code := ctx.Query("code")
 
 		if code == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidToken.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": errors.NewCommonError(ErrInvalidToken)})
 			return
 		}
 
@@ -110,7 +111,7 @@ func GitHubLogin(s Service, clientURI string) gin.HandlerFunc {
 		token, err := s.GitHubLogin(ctx, code)
 
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": errors.NewCommonError(err)})
 			return
 		}
 

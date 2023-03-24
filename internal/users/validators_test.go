@@ -1,9 +1,11 @@
 package users
 
 import (
+	"apous-films-rest-api/internal/errors"
 	"apous-films-rest-api/internal/test"
 	"bytes"
 	"io"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,19 +13,27 @@ import (
 
 var registerTests = []struct {
 	data          string
-	expectedError string
+	expectedError *errors.CommonError
 }{
 	{
 		`{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
-		"",
+		nil,
 	},
 	{
 		`{"user": {"email": "steve@gmail.com", "password": "pass"}}`,
-		"PasswordConfirmation is required",
+		&errors.CommonError{
+			Message: "",
+			Errors: []errors.InputError{
+				{Field: "PasswordConfirmation", Error: "PasswordConfirmation is required"},
+			},
+		},
 	},
 	{
 		`{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "wrongpass"}}`,
-		ErrMismatchedPasswords.Error(),
+		&errors.CommonError{
+			Message: ErrMismatchedPasswords.Error(),
+			Errors:  nil,
+		},
 	},
 }
 
@@ -38,25 +48,39 @@ func Test_RegisterValidatorBind(t *testing.T) {
 		v := &RegisterValidator{}
 		err := v.Bind(ctx)
 
-		if tc.expectedError == "" {
+		if tc.expectedError == nil {
 			asserts.Nil(err)
-		} else {
-			asserts.ErrorContains(err, tc.expectedError)
+			continue
+		}
+
+		comErr := errors.NewValidationError(err)
+
+		if tc.expectedError.Message != "" {
+			asserts.Equal(tc.expectedError.Message, comErr.Message)
+		}
+
+		if tc.expectedError.Errors != nil {
+			asserts.True(reflect.DeepEqual(tc.expectedError.Errors, comErr.Errors))
 		}
 	}
 }
 
 var loginTests = []struct {
 	data          string
-	expectedError string
+	expectedError *errors.CommonError
 }{
 	{
 		`{"user": {"email": "steve@gmail.com", "password": "pass"}}`,
-		"",
+		nil,
 	},
 	{
 		`{"user": {"email": "steve@gmail.com"}}`,
-		"Password is required",
+		&errors.CommonError{
+			Message: "",
+			Errors: []errors.InputError{
+				{Field: "Password", Error: "Password is required"},
+			},
+		},
 	},
 }
 
@@ -71,10 +95,19 @@ func Test_LoginValidatorBind(t *testing.T) {
 		v := &LoginValidator{}
 		err := v.Bind(ctx)
 
-		if tc.expectedError == "" {
+		if tc.expectedError == nil {
 			asserts.Nil(err)
-		} else {
-			asserts.ErrorContains(err, tc.expectedError)
+			continue
+		}
+
+		comErr := errors.NewValidationError(err)
+
+		if tc.expectedError.Message != "" {
+			asserts.Equal(tc.expectedError.Message, comErr.Message)
+		}
+
+		if tc.expectedError.Errors != nil {
+			asserts.True(reflect.DeepEqual(tc.expectedError.Errors, comErr.Errors))
 		}
 	}
 }
