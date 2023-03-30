@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_extractToken(t *testing.T) {
+func Test_middleware_extractToken(t *testing.T) {
 	asserts := assert.New(t)
 
 	w := httptest.NewRecorder()
@@ -27,7 +27,7 @@ func Test_extractToken(t *testing.T) {
 	asserts.Empty(token)
 }
 
-func Test_GetCurrentUser(t *testing.T) {
+func Test_middleware_GetCurrentUser(t *testing.T) {
 	asserts := assert.New(t)
 
 	w := httptest.NewRecorder()
@@ -43,7 +43,7 @@ func Test_GetCurrentUser(t *testing.T) {
 	asserts.Equal("steve@gmail.com", user.Email)
 }
 
-func Test_JwtAthentication(t *testing.T) {
+func Test_middleware_JwtAthentication(t *testing.T) {
 	asserts := assert.New(t)
 
 	r := test.MockRouter()

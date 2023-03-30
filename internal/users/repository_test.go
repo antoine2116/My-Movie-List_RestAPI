@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Test_Repository(t *testing.T) {
+func Test_repository(t *testing.T) {
 	asserts := assert.New(t)
 
 	db := test.DB(t)

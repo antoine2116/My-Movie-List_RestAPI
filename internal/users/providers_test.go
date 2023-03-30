@@ -12,7 +12,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func Test_ProvidersGoogleExchange(t *testing.T) {
+func Test_providers_GoogleExchange(t *testing.T) {
 	asserts := assert.New(t)
 
 	tokenEp := mockTokenEndpoint()
@@ -33,7 +33,7 @@ func Test_ProvidersGoogleExchange(t *testing.T) {
 	asserts.NotNil(err)
 }
 
-func Test_ProvidersGoogleGetUserEmail(t *testing.T) {
+func Test_providers_GoogleGetUserEmail(t *testing.T) {
 	asserts := assert.New(t)
 
 	profileEp := mockGoogleProfileEndpoint()
@@ -60,7 +60,7 @@ func Test_ProvidersGoogleGetUserEmail(t *testing.T) {
 	asserts.NotNil(err)
 }
 
-func Test_ProvidersGitHubExchange(t *testing.T) {
+func Test_providers_GitHubExchange(t *testing.T) {
 	asserts := assert.New(t)
 
 	tokenEp := mockTokenEndpoint()
@@ -81,7 +81,7 @@ func Test_ProvidersGitHubExchange(t *testing.T) {
 	asserts.NotNil(err)
 }
 
-func Test_ProvidersGitHubGetUserEmail(t *testing.T) {
+func Test_providers_GitHubGetUserEmail(t *testing.T) {
 	asserts := assert.New(t)
 
 	emailsEp := mockGitHubEmailsEndpoint()

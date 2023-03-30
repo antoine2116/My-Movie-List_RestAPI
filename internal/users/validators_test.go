@@ -37,7 +37,7 @@ var registerTests = []struct {
 	},
 }
 
-func Test_RegisterValidatorBind(t *testing.T) {
+func Test_validator_RegisterBind(t *testing.T) {
 	asserts := assert.New(t)
 
 	ctx := test.MockGinContext()
@@ -84,7 +84,7 @@ var loginTests = []struct {
 	},
 }
 
-func Test_LoginValidatorBind(t *testing.T) {
+func Test_validator_LoginBind(t *testing.T) {
 	asserts := assert.New(t)
 
 	ctx := test.MockGinContext()
