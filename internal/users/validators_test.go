@@ -1,10 +1,10 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/errors"
-	"apous-films-rest-api/internal/test"
 	"bytes"
 	"io"
+	"mml-rest-api/internal/errors"
+	"mml-rest-api/internal/test"
 	"reflect"
 	"testing"
 

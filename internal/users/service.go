@@ -1,9 +1,9 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/models"
-	"apous-films-rest-api/internal/utils"
 	"context"
+	"mml-rest-api/internal/models"
+	"mml-rest-api/internal/utils"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"

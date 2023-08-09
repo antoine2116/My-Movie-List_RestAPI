@@ -1,9 +1,9 @@
 package test
 
 import (
-	"apous-films-rest-api/internal/config"
-	"apous-films-rest-api/pkg/database"
 	"context"
+	"mml-rest-api/internal/config"
+	"mml-rest-api/pkg/database"
 	"os"
 	"testing"
 	"time"

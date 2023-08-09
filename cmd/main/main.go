@@ -1,13 +1,13 @@
 package main
 
 import (
-	"apous-films-rest-api/internal/config"
-	"apous-films-rest-api/internal/router"
-	"apous-films-rest-api/internal/users"
-	"apous-films-rest-api/pkg/database"
 	"context"
 	"fmt"
 	"log"
+	"mml-rest-api/internal/config"
+	"mml-rest-api/internal/router"
+	"mml-rest-api/internal/users"
+	"mml-rest-api/pkg/database"
 	"net/http"
 	"os"
 	"time"

@@ -1,8 +1,8 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/test"
 	"fmt"
+	"mml-rest-api/internal/test"
 	"net/http"
 	"net/http/httptest"
 	"testing"

@@ -1,9 +1,9 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/models"
-	"apous-films-rest-api/pkg/database"
 	"context"
+	"mml-rest-api/internal/models"
+	"mml-rest-api/pkg/database"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

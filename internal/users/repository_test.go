@@ -1,9 +1,9 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/models"
-	"apous-films-rest-api/internal/test"
 	"context"
+	"mml-rest-api/internal/models"
+	"mml-rest-api/internal/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

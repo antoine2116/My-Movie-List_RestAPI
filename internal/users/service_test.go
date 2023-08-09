@@ -1,9 +1,9 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/models"
 	"context"
 	"errors"
+	"mml-rest-api/internal/models"
 	"testing"
 	"time"
 

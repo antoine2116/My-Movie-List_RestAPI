@@ -1,7 +1,7 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/errors"
+	"mml-rest-api/internal/errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

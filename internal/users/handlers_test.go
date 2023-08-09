@@ -1,7 +1,7 @@
 package users
 
 import (
-	"apous-films-rest-api/internal/test"
+	"mml-rest-api/internal/test"
 	"net/http"
 	"testing"
 
@@ -20,53 +20,53 @@ func Test_handlers_Register_and_Login(t *testing.T) {
 
 	testCases := []test.APITestCase{
 		{
-			Path:             "/register",
-			Method:           "POST",
-			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
-			ExpectedStatus:   201,
-			Message:          "Valid data should return StatusCreated (201)",
+			Path:           "/register",
+			Method:         "POST",
+			Body:           `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
+			ExpectedStatus: 201,
+			Message:        "Valid data should return StatusCreated (201)",
 		},
 		{
-			Path:             "/register",
-			Method:           "POST",
-			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "wrongconfirmation"}}`,
-			ExpectedStatus:   400,
-			Message:          "Wrong password confirmation should return StatusBadRequest (400)",
+			Path:           "/register",
+			Method:         "POST",
+			Body:           `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "wrongconfirmation"}}`,
+			ExpectedStatus: 400,
+			Message:        "Wrong password confirmation should return StatusBadRequest (400)",
 		},
 		{
-			Path:             "/register",
-			Method:           "POST",
-			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
-			ExpectedStatus:   409,
-			Message:          "Same email as another user should return StatusConflict (409)",
+			Path:           "/register",
+			Method:         "POST",
+			Body:           `{"user": {"email": "steve@gmail.com", "password": "pass", "passwordConfirmation": "pass"}}`,
+			ExpectedStatus: 409,
+			Message:        "Same email as another user should return StatusConflict (409)",
 		},
 		{
-			Path:             "/login",
-			Method:           "POST",
-			Body:             `{"user": {"email": "steve@gmail.com", "password": "pass"}}`,
-			ExpectedStatus:   200,
-			Message:          "Valid data should return StatusOK (200)",
+			Path:           "/login",
+			Method:         "POST",
+			Body:           `{"user": {"email": "steve@gmail.com", "password": "pass"}}`,
+			ExpectedStatus: 200,
+			Message:        "Valid data should return StatusOK (200)",
 		},
 		{
-			Path:             "/login",
-			Method:           "POST",
-			Body:             `{"user": {"email": "steve@gmail.com"}}`,
-			ExpectedStatus:   400,
-			Message:          "Invalid data (missing password) should return StatusBadRequest (400)",
+			Path:           "/login",
+			Method:         "POST",
+			Body:           `{"user": {"email": "steve@gmail.com"}}`,
+			ExpectedStatus: 400,
+			Message:        "Invalid data (missing password) should return StatusBadRequest (400)",
 		},
 		{
-			Path:             "/login",
-			Method:           "POST",
-			Body:             `{"user": {"email": "notsteve@gmail.com", "password": "pass"}}`,
-			ExpectedStatus:   401,
-			Message:          "Wrong email should return StatusUnauthorized (401)",
+			Path:           "/login",
+			Method:         "POST",
+			Body:           `{"user": {"email": "notsteve@gmail.com", "password": "pass"}}`,
+			ExpectedStatus: 401,
+			Message:        "Wrong email should return StatusUnauthorized (401)",
 		},
 		{
-			Path:             "/login",
-			Method:           "POST",
-			Body:             `{"user": {"email": "steve@gmail.com", "password": "wrongpass"}}`,
-			ExpectedStatus:   401,
-			Message:          "Wrong password should return StatusUnauthorized (401)",
+			Path:           "/login",
+			Method:         "POST",
+			Body:           `{"user": {"email": "steve@gmail.com", "password": "wrongpass"}}`,
+			ExpectedStatus: 401,
+			Message:        "Wrong password should return StatusUnauthorized (401)",
 		},
 	}
 

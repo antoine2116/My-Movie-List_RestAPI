@@ -1,4 +1,4 @@
-module apous-films-rest-api
+module mml-rest-api
 
 go 1.20
 
