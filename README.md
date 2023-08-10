@@ -8,8 +8,6 @@ Built for the [My Movie List App](https://github.com/antoine2116/My-Movie-List_A
 
 Testing is done using the standard `testing` package and the `testify` library. Code coverage is tracked using `codecov` via GitHub Actions.
 
-
-
 ## Getting Started
 
 ### Prequisite
@@ -17,7 +15,6 @@ Testing is done using the standard `testing` package and the `testify` library. 
 - Go (1.3 or higher)
 - MongoDB (3.6 or higher)
 - Docker (for optional MongoDB containerization)
-
 
 ### Installation
 
@@ -28,6 +25,7 @@ Testing is done using the standard `testing` package and the `testify` library. 
 
 2. Install dependencies
     ```sh
+    cd My-Movie-List_RestAPI
     go mod download
     ```
 
@@ -62,6 +60,7 @@ To run a Docker container with MongoDB, execute the following command :
 ```sh
 docker run -d -p 27017:27017 --name my-movie-list-mongodb mongo
 ```
+
 ## Endpoints
 
 ### User Registration
